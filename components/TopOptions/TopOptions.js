@@ -19,6 +19,7 @@ export default function TopOptions() {
   const [exerciceTimestamp, setExerciceTimestamp] = useState(
     moment("15122021", "DDMMYYYY").format("x")
   );
+
   const [pricePredicted, setPricePredicted] = useState("70000");
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
@@ -46,14 +47,13 @@ export default function TopOptions() {
       setIsLoading(true);
       searchOptions({
         symbol,
-        exerciceTimestamp,
+        exerciceTimestamp: moment(exerciceTimestamp).format("x"),
         pricePredicted,
       });
     }
   };
   const handleDayClick = (day) => {
-    console.log({ day });
-    setExerciceTimestamp(moment(day).format("x"));
+    setExerciceTimestamp(day);
   };
 
   return (
@@ -61,8 +61,14 @@ export default function TopOptions() {
       <div className="mt-10 ">
         <div className="p-2 ">
           <DayPicker
-            selectedDays={exerciceTimestamp}
+            selectedDays={new Date(exerciceTimestamp)}
             onDayClick={handleDayClick}
+            disabledDays={[
+              {
+                before: new Date(),
+              },
+            ]}
+            fromMonth={new Date()}
           />
         </div>
         <DropdownButtonCrypto
