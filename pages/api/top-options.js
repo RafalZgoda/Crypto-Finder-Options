@@ -111,7 +111,7 @@ async function getOrderBookAndEstimatePriceForOptions(options, RISK_FREE_RATE) {
   return formattedCalls;
 }
 
-function findBestOptionForScenario(
+function findBestOptionsForScenario(
   options,
   predictedExerciceTimestamp,
   predictedUnderlyingPrice
@@ -148,7 +148,7 @@ module.exports = async (req, res) => {
   let { symbol, exerciceTimestamp, pricePredicted } = req.body;
 
   try {
-    const RISK_FREE_RATE = await getRiskFreeRate();
+    // const RISK_FREE_RATE = await getRiskFreeRate();
     const bestOPtions = [
       {
         instrument_name: "BTC-25MAR22-70000-C",
@@ -248,12 +248,13 @@ module.exports = async (req, res) => {
       calls,
       RISK_FREE_RATE
     );
-    let bestOption = await findBestOptionForScenario(
+    let bestOptions = await findBestOptionsForScenario(
       detailledCalls,
       exerciceTimestamp,
       pricePredicted
     );
-    console.log({ bestOption });
+    console.log({ bestOptions });
+    return res.status(201).send(bestOptions);
   } catch (error) {
     console.error({ error });
     return res.status(500).send(error);

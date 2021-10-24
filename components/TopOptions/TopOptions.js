@@ -70,7 +70,10 @@ export default function TopOptions() {
         <div className="p-2 ">
           <DayPickerInput
             selectedDay={exerciceTimestamp}
-            onDayChange={(day) => setExerciceTimestamp(day)}
+            onDayChange={(day) => {
+              console.log(moment(day).format("x"));
+              setExerciceTimestamp(moment(day).format("x"));
+            }}
           />
         </div>
         <DropdownButtonCrypto onSelection />
@@ -93,7 +96,7 @@ export default function TopOptions() {
             name="pricePredicted"
             value={pricePredicted}
             onChange={(event) => setPricePredicted(event.target.value)}
-            placeholder="Enter your pricePredicted"
+            placeholder="Predicted price ($)"
             className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
           />
         </div>
@@ -120,7 +123,6 @@ export default function TopOptions() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Loading
           </button>
         ) : (
           <button

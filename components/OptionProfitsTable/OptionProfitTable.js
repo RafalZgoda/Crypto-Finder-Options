@@ -48,7 +48,9 @@ export default function OptionsProfitTable({ option, symbol }) {
   return (
     <>
       <div className="grid grid-cols-2 gap-4 mt-10 ">
-        <span className="underline text-xl">Begin Price</span>
+        <span className="text-xl"> </span>
+        <span className="text-xl">Price range</span>
+
         <input
           id="beginPrice"
           type="beginPrice"
@@ -58,7 +60,6 @@ export default function OptionsProfitTable({ option, symbol }) {
           placeholder="Enter your beginPrice"
           className=" px-4 py-3 rounded-md border-4 text-base text-gray-900 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
         />
-        <span className="underline text-xl">End Price</span>
 
         <input
           id="endPrice"
@@ -91,10 +92,14 @@ export default function OptionsProfitTable({ option, symbol }) {
               <tbody>
                 {prices?.map((price, index) => (
                   <tr key={index}>
-                    {price}
-
+                    {price}$
                     {Object?.values(tableData[price]).flatMap((key, i) => (
-                      <td key={i}>{Math.round(key)}</td>
+                      <td
+                        className={key > 10 ? "bg-green-500	" : "bg-red-500	"}
+                        key={i}
+                      >
+                        {Math.round(key)}$
+                      </td>
                     ))}
                   </tr>
                 ))}
