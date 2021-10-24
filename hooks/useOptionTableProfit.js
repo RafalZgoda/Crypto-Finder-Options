@@ -11,5 +11,5 @@ export const useOptionTableProfit = ({ option, beginPrice, endPrice }) => {
         },
       }
     )
-    .then((res) => res.data.payload);
+    .then((res) => res.data);
 };

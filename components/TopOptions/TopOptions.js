@@ -2,13 +2,24 @@ import { useState } from "react";
 // import axios from "axios";
 import { useTopOptions } from "../../hooks/useTopOptions";
 import { useMutation } from "react-query";
+import { RadioGroup } from "@headlessui/react";
+import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
+import moment from "moment";
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
 // import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
 export default function TopOptions() {
   const [symbol, setSymbol] = useState("BTC");
-  const [exerciceTimestamp, setExerciceTimestamp] = useState("1635024911509");
+  const [exerciceTimestamp, setExerciceTimestamp] = useState(
+    moment("15122021", "DDMMYYYY").format("x")
+  );
   const [pricePredicted, setPricePredicted] = useState("70000");
-  const [options, setOptions] = useState();
+  const [options, setOptions] = useState([]);
+  const [selected, setSelected] = useState();
+
   const { mutate, data, isSuccess } = useMutation(useTopOptions, {
     onSuccess: (data) => {
       console.log({ data });
@@ -19,26 +30,14 @@ export default function TopOptions() {
     },
   });
 
-  const getTopOptions = () => {
+  const onSubmitHandler = (event) => {
+    event.preventDefault();
     if (symbol && exerciceTimestamp && pricePredicted) {
       mutate({
         symbol,
         exerciceTimestamp,
         pricePredicted,
       });
-
-      // axios.post("http://localhost:3000/api/top-options", {
-      //   symbol,
-      //   exerciceTimestamp,
-      //   pricePredicted,
-      // });
-    }
-  };
-
-  const onSubmitHandler = (event) => {
-    event.preventDefault();
-    if (symbol && exerciceTimestamp && pricePredicted) {
-      getTopOptions();
     }
   };
 
@@ -89,16 +88,73 @@ export default function TopOptions() {
           submit
         </button>
       </div>
-      {options?.map((option, index) => (
-        <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-            {option.instrument_name}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-            {option.ROI}
-          </td>
-        </tr>
-      ))}
+
+      <RadioGroup value={selected} onChange={setSelected}>
+        <RadioGroup.Label className="sr-only">
+          Top 5 Options order by ROI
+        </RadioGroup.Label>
+        <div className="space-y-4">
+          {options?.map((option) => (
+            <RadioGroup.Option
+              key={option.instrument_name}
+              value={option}
+              className={({ active }) =>
+                classNames(
+                  active ? "ring-1 ring-offset-2 ring-indigo-500" : "",
+                  "relative block rounded-lg border border-gray-300 bg-white shadow-sm px-6 py-4 cursor-pointer hover:border-gray-400 sm:flex sm:justify-between focus:outline-none"
+                )
+              }
+            >
+              {({ checked }) => (
+                <>
+                  <div className="flex items-center">
+                    <div className="text-sm">
+                      <RadioGroup.Label
+                        as="p"
+                        className="font-medium text-gray-900"
+                      >
+                        {option.instrument_name}
+                      </RadioGroup.Label>
+                      <RadioGroup.Description
+                        as="div"
+                        className="text-gray-500"
+                      >
+                        <p className="sm:inline">
+                          {option.estimatePredictedPrice} / {option.askPrice}
+                        </p>{" "}
+                        <span
+                          className="hidden sm:inline sm:mx-1"
+                          aria-hidden="true"
+                        >
+                          &middot;
+                        </span>{" "}
+                        <p className="sm:inline">{option.ROI}</p>
+                      </RadioGroup.Description>
+                    </div>
+                  </div>
+                  <RadioGroup.Description
+                    as="div"
+                    className="mt-2 flex text-sm sm:mt-0 sm:block sm:ml-4 sm:text-right"
+                  >
+                    <div className="font-medium text-gray-900">
+                      {option.profit}
+                    </div>
+                    <div className="ml-1 text-gray-500 sm:ml-0">/mo</div>
+                  </RadioGroup.Description>
+                  <div
+                    className={classNames(
+                      checked ? "border-indigo-500" : "border-transparent",
+                      "absolute -inset-px rounded-lg border-2 pointer-events-none"
+                    )}
+                    aria-hidden="true"
+                  />
+                </>
+              )}
+            </RadioGroup.Option>
+          ))}
+        </div>
+      </RadioGroup>
+      {selected && <OptionProfitTable option={selected} />}
     </div>
   );
 }

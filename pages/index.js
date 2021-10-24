@@ -1,5 +1,4 @@
 import Head from "next/head";
-import OptionProfitTable from "../components/OptionProfitsTable/OptionProfitTable";
 import TopOptions from "../components/TopOptions/TopOptions";
 
 export default function Home() {
@@ -19,7 +18,6 @@ export default function Home() {
           <TopOptions />
         </div>
       </main>
-      {/* <OptionProfitTable /> */}
       <footer className="flex items-center justify-center w-full h-24 border-t">
         <a
           className="flex items-center justify-center"

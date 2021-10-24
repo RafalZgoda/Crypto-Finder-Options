@@ -1,7 +1,7 @@
 var bs = require("black-scholes");
 const moment = require("moment");
 
-const MAX_HEADERS = 30;
+const MAX_HEADERS = 15;
 const MAX_ROWS = 30;
 
 function estimateOptionPrice({
@@ -35,7 +35,9 @@ function computeTimeToExpire(exerciceTimestamp, expirationDate) {
   return timeToExpire;
 }
 
-function drawData(option, beginPrice, endPrice) {
+function drawData(optionData, beginPrice, endPrice) {
+  let { option } = optionData;
+  // console.log({ option, beginPrice, endPrice });
   let data = {};
   let incrementPrice = Math.round((endPrice - beginPrice) / MAX_ROWS, 2);
   let incrementDate = Math.round(
@@ -43,17 +45,17 @@ function drawData(option, beginPrice, endPrice) {
     0
   );
 
-  console.log(incrementPrice, incrementDate);
-  console.log(beginPrice, endPrice);
+  console.log({ incrementPrice, incrementDate, beginPrice, endPrice });
+
   for (let price = beginPrice; price < endPrice; price += incrementPrice) {
-    data[price] = [];
+    data[price] = {};
     for (
       let date = Date.now();
       date < option.expirationTimestamp;
       date += incrementDate
     ) {
       const readableDate = moment(date).format("DDMM");
-      console.log(readableDate);
+      // console.log(readableDate);
       data[price][date] = estimateOptionPrice({
         ...option,
         exerciceTimestamp: date,
@@ -61,13 +63,15 @@ function drawData(option, beginPrice, endPrice) {
       });
     }
   }
+  console.log({ data });
   // format table
   return data;
 }
 
 module.exports = async (req, res) => {
-  let { option, beginPrice, endPrice } = req.body;
-
+  let { option, beginPrice: beginPrice, endPrice } = req.body;
+  beginPrice = parseInt(beginPrice);
+  endPrice = parseInt(endPrice);
   console.log({ option });
   if (!option) {
     return res.status(422).send("Option not selected");
