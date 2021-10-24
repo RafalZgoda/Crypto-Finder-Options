@@ -253,7 +253,6 @@ module.exports = async (req, res) => {
       exerciceTimestamp,
       pricePredicted
     );
-    console.log({ bestOptions });
     return res.status(201).send(bestOptions);
   } catch (error) {
     console.error({ error });

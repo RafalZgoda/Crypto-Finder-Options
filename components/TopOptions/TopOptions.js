@@ -5,22 +5,24 @@ import { useMutation } from "react-query";
 import { useTopOptions } from "../../hooks/useTopOptions";
 import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
 import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
-import DayPickerInput from "react-day-picker/DayPickerInput";
+import DayPicker from "react-day-picker";
+
+import "react-day-picker/lib/style.css";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function TopOptions() {
-  const [symbol, setSymbol] = useState("BTC");
+  const [symbol, setSymbol] = useState(null);
   const [exerciceTimestamp, setExerciceTimestamp] = useState(
     moment("15122021", "DDMMYYYY").format("x")
   );
+
   const [pricePredicted, setPricePredicted] = useState("70000");
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
   const [isLoading, setIsLoading] = useState(false);
-
   const {
     mutate: searchOptions,
     data: optionsFound,
@@ -44,50 +46,35 @@ export default function TopOptions() {
       setIsLoading(true);
       searchOptions({
         symbol,
-        exerciceTimestamp,
+        exerciceTimestamp: moment(exerciceTimestamp).format("x"),
         pricePredicted,
       });
     }
   };
-  const onSelection = (symbol) => {
-    setSymbol(symbol);
+  const handleDayClick = (day) => {
+    setExerciceTimestamp(day);
   };
 
   return (
     <>
       <div className="mt-10 ">
         <div className="p-2 ">
-          <input
-            id="exerciceTimestamp"
-            type="exerciceTimestamp"
-            name="exerciceTimestamp"
-            value={exerciceTimestamp}
-            onChange={(event) => setExerciceTimestamp(event.target.value)}
-            placeholder="Enter your exerciceTimestamp"
-            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          <DayPicker
+            selectedDays={new Date(exerciceTimestamp)}
+            onDayClick={handleDayClick}
+            disabledDays={[
+              {
+                before: new Date(),
+              },
+            ]}
+            fromMonth={new Date()}
           />
         </div>
-        <div className="p-2 ">
-          <DayPickerInput
-            selectedDay={exerciceTimestamp}
-            onDayChange={(day) => {
-              console.log(moment(day).format("x"));
-              setExerciceTimestamp(moment(day).format("x"));
-            }}
-          />
-        </div>
-        <DropdownButtonCrypto onSelection />
-        <div className="p-2 ">
-          <input
-            id="symbol"
-            type="symbol"
-            name="symbol"
-            value={symbol}
-            onChange={(event) => setSymbol(event.target.value)}
-            placeholder="Enter your symbol"
-            className=" px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-          />
-        </div>
+        <DropdownButtonCrypto
+          onSelection={(symbol) => {
+            setSymbol(symbol);
+          }}
+        />
 
         <div className="p-2">
           <input
@@ -102,32 +89,35 @@ export default function TopOptions() {
         </div>
 
         {isLoading ? (
-          <button className="  rounded-md border border-transparent px-5 py-3 bg-gray-800 text-base font-medium text-white shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10">
-            <svg
-              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          </button>
+          <div className="min-w-0 flex justify-center">
+            <button className="flex rounded-md border border-transparent px-5 py-3 bg-gray-800 text-base font-medium text-white shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10">
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </button>
+          </div>
         ) : (
           <button
             onClick={onSubmitHandler}
-            className=" rounded-md border border-transparent px-5 py-3 bg-gray-700 text-base font-medium text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10"
+            disabled={!symbol || !exerciceTimestamp}
+            className="rounded-md border border-transparent px-5 py-3 bg-gray-700 text-base font-medium text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10"
           >
             Search Options
           </button>
@@ -177,7 +167,6 @@ export default function TopOptions() {
                               &middot;
                             </span>
                             <p className="sm:inline">
-                              {" "}
                               ROI {Math.round(option.ROI * 100, 0)} %
                             </p>
                           </RadioGroup.Description>

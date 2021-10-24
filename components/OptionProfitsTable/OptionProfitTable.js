@@ -18,7 +18,6 @@ export default function OptionsProfitTable({ option, symbol }) {
 
   useEffect(() => {
     if (optionsTableProfit && isSuccess) {
-      console.log(optionsTableProfit);
       const pricesFound = Object.keys(optionsTableProfit);
       const headersDates = Object.keys(optionsTableProfit[pricesFound[0]]);
 
@@ -42,9 +41,6 @@ export default function OptionsProfitTable({ option, symbol }) {
     }
   };
 
-  console.log({ tableData });
-  console.log({ headers });
-  console.log({ prices });
   return (
     <>
       <div className="grid grid-cols-2 gap-4 mt-10 ">
@@ -83,8 +79,8 @@ export default function OptionsProfitTable({ option, symbol }) {
             <thead className="bg-red-50">
               <tr key={Math.random()}>
                 {symbol}
-                {headers?.map((time) => (
-                  <th>{moment(parseInt(time)).format("DD/MM")}</th>
+                {headers?.map((time, index) => (
+                  <th key={index}>{moment(parseInt(time)).format("DD/MM")}</th>
                 ))}
               </tr>
             </thead>

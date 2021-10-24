@@ -43,7 +43,7 @@ function drawData(option, beginPrice, endPrice) {
     (option.expirationTimestamp - Date.now()) / MAX_HEADERS,
     0
   );
-  console.log({ incrementPrice, incrementDate, beginPrice, endPrice });
+
   let initDate = Date.now();
   for (let price = beginPrice; price < endPrice; price += incrementPrice) {
     data[price] = {};
@@ -62,7 +62,6 @@ function drawData(option, beginPrice, endPrice) {
         }) - option.askPrice;
     }
   }
-  console.log({ data });
   // format table
   return data;
 }
@@ -71,7 +70,6 @@ module.exports = async (req, res) => {
   let { option, beginPrice: beginPrice, endPrice } = req.body;
   beginPrice = parseInt(beginPrice);
   endPrice = parseInt(endPrice);
-  console.log({ option });
   if (!option) {
     return res.status(422).send("Option not selected");
   }
