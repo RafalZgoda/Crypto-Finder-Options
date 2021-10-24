@@ -4,14 +4,16 @@ const bluebird = require("bluebird");
 
 const OPTION_TYPE = "call";
 const CURRENT_IV = 0.8623;
-// const URL_DERIBIT = "https://www.deribit.com";
-const URL_DERIBIT = "https://test.deribit.com";
+const URL_DERIBIT = "https://www.deribit.com";
+// const URL_DERIBIT = "https://test.deribit.com";
 const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
+
+// TODO get Current IV
+// TODO add budget
 // TODO add the APIKEY deribit for rate limiter
-// TODO filter near terms options (by timestamp)
-// TODO compute % profit for a future date and an underlying Price for a specific option
-// TODO find the max % profit with the best option for a future date and an underlying Price
-// TODO get Current IV and RISK FREE RATE for
+// TODO manual settings
+// TODO fix date picker
+// TODO table price with 0
 
 async function getOptions(currency) {
   const { data } = await axios.get(
@@ -111,7 +113,7 @@ async function getOrderBookAndEstimatePriceForOptions(options, RISK_FREE_RATE) {
   return formattedCalls;
 }
 
-function findBestOptionForScenario(
+function findBestOptionsForScenario(
   options,
   predictedExerciceTimestamp,
   predictedUnderlyingPrice
@@ -148,20 +150,42 @@ module.exports = async (req, res) => {
   let { symbol, exerciceTimestamp, pricePredicted } = req.body;
 
   try {
-    const RISK_FREE_RATE = await getRiskFreeRate();
-
+    // const bestOPtions = [
+    //   {
+    //     instrument_name: "BTC-25MAR22-70000-C",
+    //     strike: 70000,
+    //     underlyingPrice: 63818.32,
+    //     exerciceTimestamp: 1635081492209,
+    //     expirationTimestamp: 1648195200000,
+    //     type: "call",
+    //     riskFreeRate: 0.0166,
+    //     mark_iv: 68.33,
+    //     implied_volatility: 0.8623,
+    //     askPriceBTC: 0.1375,
+    //     askPrice: 8775.019,
+    //     estimatePrice: 11918.83813710379,
+    //     overPrice: 0.7362310737892342,
+    //     ROI: 0.44011883277216035,
+    //     profit: 3862.05111983353,
+    //     estimatePredictedPrice: 12637.07011983353,
+    //   },
+    // ];
+    // return res.status(201).send(bestOPtions);
     const options = await getOptions(symbol);
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
+    const RISK_FREE_RATE = await getRiskFreeRate();
+
     let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
       calls,
       RISK_FREE_RATE
     );
-    const bestOption = await findBestOptionForScenario(
+    let bestOptions = await findBestOptionsForScenario(
       detailledCalls,
       exerciceTimestamp,
       pricePredicted
     );
-    return res.status(201).send(bestOption);
+    console.log({ bestOptions });
+    return res.status(201).send(bestOptions);
   } catch (error) {
     console.error({ error });
     return res.status(500).send(error);

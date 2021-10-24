@@ -6,7 +6,6 @@ import { useTopOptions } from "../../hooks/useTopOptions";
 import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
 import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
 import DayPicker from "react-day-picker";
-
 import "react-day-picker/lib/style.css";
 
 function classNames(...classes) {
@@ -19,7 +18,8 @@ export default function TopOptions() {
     moment("15122021", "DDMMYYYY").format("x")
   );
 
-  const [pricePredicted, setPricePredicted] = useState("70000");
+  const [pricePredicted, setPricePredicted] = useState();
+  const [budget, setBudget] = useState();
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +58,11 @@ export default function TopOptions() {
   return (
     <>
       <div className="mt-10 ">
+        <DropdownButtonCrypto
+          onSelection={(symbol) => {
+            setSymbol(symbol);
+          }}
+        />
         <div className="p-2 ">
           <DayPicker
             selectedDays={new Date(exerciceTimestamp)}
@@ -70,11 +75,6 @@ export default function TopOptions() {
             fromMonth={new Date()}
           />
         </div>
-        <DropdownButtonCrypto
-          onSelection={(symbol) => {
-            setSymbol(symbol);
-          }}
-        />
 
         <div className="p-2">
           <input
@@ -83,7 +83,19 @@ export default function TopOptions() {
             name="pricePredicted"
             value={pricePredicted}
             onChange={(event) => setPricePredicted(event.target.value)}
-            placeholder="Enter your pricePredicted"
+            placeholder="Predicted price ($)"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          />
+        </div>
+
+        <div className="p-2">
+          <input
+            id="budget"
+            type="budget"
+            name="budget"
+            value={budget}
+            onChange={(event) => setBudget(event.target.value)}
+            placeholder="Budget ($)"
             className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
           />
         </div>
@@ -111,7 +123,6 @@ export default function TopOptions() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Loading
             </button>
           </div>
         ) : (
@@ -120,7 +131,7 @@ export default function TopOptions() {
             disabled={!symbol || !exerciceTimestamp}
             className="rounded-md border border-transparent px-5 py-3 bg-gray-700 text-base font-medium text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10"
           >
-            Search Options
+            Search Top Options
           </button>
         )}
 
@@ -147,7 +158,7 @@ export default function TopOptions() {
                         <div className="text-sm">
                           <RadioGroup.Label
                             as="p"
-                            className="font-medium text-gray-900"
+                            className="flex-shrink-0 inline-block px-2 py-0.5 text-grey-800 text-xs font-medium bg-green-100 rounded-full"
                           >
                             {option.instrument_name}
                           </RadioGroup.Label>
@@ -156,20 +167,11 @@ export default function TopOptions() {
                             className="text-gray-500"
                           >
                             <p className="sm:inline">
-                              Estimated projected Price :{" "}
-                              {Math.round(option.estimatePredictedPrice)} $
-                              Current buying price {Math.round(option.askPrice)}{" "}
-                              $
+                              {Math.round(budget / option.askPrice)} x @
+                              {option.askPriceBTC}
+                              {/* {Math.round(option.askPriceBTC)} */}
                             </p>
-                            <span
-                              className="hidden sm:inline sm:mx-1"
-                              aria-hidden="true"
-                            >
-                              &middot;
-                            </span>
-                            <p className="sm:inline">
-                              ROI {Math.round(option.ROI * 100, 0)} %
-                            </p>
+                            <p className="sm:inline"></p>
                           </RadioGroup.Description>
                         </div>
                       </div>
@@ -177,10 +179,16 @@ export default function TopOptions() {
                         as="div"
                         className="mt-2  text-sm sm:mt-0 sm:block sm:ml-4 sm:text-right"
                       >
-                        <div className="font-medium text-gray-900">
-                          Profit :{option.profit}
+                        <div className="font-medium text-left text-gray-900">
+                          ROI :{" "}
+                          <span className="text-green-400">
+                            {Math.round(option.ROI * 100, 0)} %{" "}
+                          </span>
                         </div>
-                        <div className="ml-1 text-gray-500 sm:ml-0">/mo</div>
+                        <div className="ml-1 text-gray-500  text-left sm:ml-0">
+                          {" "}
+                          Profit : {Math.round(budget * option.profit)}$
+                        </div>
                       </RadioGroup.Description>
                       <div
                         className={classNames(
@@ -197,7 +205,14 @@ export default function TopOptions() {
           </RadioGroup>
         </div>
       </div>
-      {selected && <OptionProfitTable option={selected} symbol={symbol} />}
+      {selected && (
+        <OptionProfitTable
+          option={selected}
+          symbol={symbol}
+          pricePredicted={pricePredicted}
+          budget={budget}
+        />
+      )}
     </>
   );
 }
