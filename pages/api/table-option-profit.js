@@ -37,7 +37,6 @@ function computeTimeToExpire(exerciceTimestamp, expirationDate) {
 
 function drawData(optionData, beginPrice, endPrice) {
   let { option } = optionData;
-  // console.log({ option, beginPrice, endPrice });
   let data = {};
   let incrementPrice = Math.round((endPrice - beginPrice) / MAX_ROWS, 2);
   let incrementDate = Math.round(
@@ -45,7 +44,6 @@ function drawData(optionData, beginPrice, endPrice) {
     0
   );
 
-  console.log({ incrementPrice, incrementDate, beginPrice, endPrice });
   let initDate = Date.now();
   for (let price = beginPrice; price < endPrice; price += incrementPrice) {
     data[price] = {};
@@ -55,7 +53,6 @@ function drawData(optionData, beginPrice, endPrice) {
       date += incrementDate
     ) {
       const readableDate = moment(date).format("DDMM");
-      // console.log(readableDate);
       data[price][date] = estimateOptionPrice({
         ...option,
         exerciceTimestamp: date,
@@ -63,7 +60,6 @@ function drawData(optionData, beginPrice, endPrice) {
       });
     }
   }
-  console.log({ data });
   // format table
   return data;
 }
@@ -72,7 +68,6 @@ module.exports = async (req, res) => {
   let { option, beginPrice: beginPrice, endPrice } = req.body;
   beginPrice = parseInt(beginPrice);
   endPrice = parseInt(endPrice);
-  console.log({ option });
   if (!option) {
     return res.status(422).send("Option not selected");
   }
