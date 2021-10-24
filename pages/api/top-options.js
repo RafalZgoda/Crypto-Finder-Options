@@ -3,11 +3,10 @@ const axios = require("axios");
 const bluebird = require("bluebird");
 
 const OPTION_TYPE = "call";
-const RISK_FREE_RATE = 0.0166;
 const CURRENT_IV = 0.8623;
 // const URL_DERIBIT = "https://www.deribit.com";
 const URL_DERIBIT = "https://test.deribit.com";
-
+const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 // TODO add the APIKEY deribit for rate limiter
 // TODO filter near terms options (by timestamp)
 // TODO compute % profit for a future date and an underlying Price for a specific option
@@ -24,6 +23,15 @@ async function getOptions(currency) {
   return data.result;
 }
 
+async function getRiskFreeRate() {
+  const { data } = await axios.get(
+    "https://data.nasdaq.com/api/v3/datasets/USTREASURY/YIELD.json?api_key=" +
+      API_KEY_NASDAQ
+  );
+  console.log({ riskFreeRate: data.dataset.data[0][10] });
+  const riskFreeRate = data.dataset.data[0][10] / 100 || 0.0166;
+  return riskFreeRate;
+}
 async function getOrderBook(optionName) {
   const { data } = await axios.get(
     URL_DERIBIT +
@@ -64,7 +72,7 @@ function computeTimeToExpire(exerciceTimestamp, expirationDate) {
   return timeToExpire;
 }
 
-async function getOrderBookAndEstimatePriceForOptions(options) {
+async function getOrderBookAndEstimatePriceForOptions(options, RISK_FREE_RATE) {
   let formattedCalls = await bluebird.Promise.map(
     options,
     async function (option) {
@@ -140,9 +148,13 @@ module.exports = async (req, res) => {
   let { symbol, exerciceTimestamp, pricePredicted } = req.body;
 
   try {
+    const RISK_FREE_RATE = await getRiskFreeRate();
     const options = await getOptions(symbol);
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
-    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(calls);
+    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
+      calls,
+      RISK_FREE_RATE
+    );
     let bestOption = await findBestOptionForScenario(
       detailledCalls,
       exerciceTimestamp,

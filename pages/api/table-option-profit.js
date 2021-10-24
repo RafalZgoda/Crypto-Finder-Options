@@ -46,11 +46,11 @@ function drawData(optionData, beginPrice, endPrice) {
   );
 
   console.log({ incrementPrice, incrementDate, beginPrice, endPrice });
-
+  let initDate = Date.now();
   for (let price = beginPrice; price < endPrice; price += incrementPrice) {
     data[price] = {};
     for (
-      let date = Date.now();
+      let date = initDate;
       date < option.expirationTimestamp;
       date += incrementDate
     ) {

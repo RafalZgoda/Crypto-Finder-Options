@@ -120,7 +120,9 @@ export default function TopOptions() {
                         className="text-gray-500"
                       >
                         <p className="sm:inline">
-                          {option.estimatePredictedPrice} / {option.askPrice}
+                          Estimated projected Price :{" "}
+                          {Math.round(option.estimatePredictedPrice)} $ Current
+                          buying price {Math.round(option.askPrice)} $
                         </p>{" "}
                         <span
                           className="hidden sm:inline sm:mx-1"
@@ -128,7 +130,9 @@ export default function TopOptions() {
                         >
                           &middot;
                         </span>{" "}
-                        <p className="sm:inline">{option.ROI}</p>
+                        <p className="sm:inline">
+                          ROI {Math.round(option.ROI * 100, 0)} %
+                        </p>
                       </RadioGroup.Description>
                     </div>
                   </div>
@@ -137,9 +141,9 @@ export default function TopOptions() {
                     className="mt-2 flex text-sm sm:mt-0 sm:block sm:ml-4 sm:text-right"
                   >
                     <div className="font-medium text-gray-900">
-                      {option.profit}
+                      Profit :{option.profit}
                     </div>
-                    <div className="ml-1 text-gray-500 sm:ml-0">/mo</div>
+                    <div className="ml-1 text-gray-500 sm:ml-0">$</div>
                   </RadioGroup.Description>
                   <div
                     className={classNames(

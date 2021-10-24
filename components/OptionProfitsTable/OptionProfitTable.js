@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "react-query";
 import { useOptionTableProfit } from "../../hooks/useOptionTableProfit";
 import moment from "moment";
+
 export default function OptionsProfitTable(option) {
   const [beginPrice, , setBeginPrice] = useState("50000");
   const [endPrice, setEndPrice] = useState("120000");
@@ -11,18 +12,44 @@ export default function OptionsProfitTable(option) {
     onSuccess: (data) => {
       // console.log({ data });
       setTableData(data);
-      Object.entries(data)?.map((time, index) => {
-        console.log(Object.keys(time[1]).map((key) => time[1][key]));
-        // console.log(index);
-        // Object.entries(time[1])?.map((prices) => {
-        //   console.log(prices);
-        // });
+      Object.entries(tableData)?.map((time) => {
+        const toto = Object.keys(time[1]).map((key) => {
+          // console.log(time[1][key]);
+          return time[1][key];
+        });
+        console.log({ toto });
       });
+
+      // Object.entries(tableData[Object.keys(tableData)[0]]).map((key) => {
+      //   console.log(key[0]);
+      // });
+      // Object.entries(tableData)?.map((time, index) => {
+      //   // console.log(time);
+      //   const toto = Object.keys(time[1]).map((key) => {
+      //     // console.log(tableData[time[0]][key]);
+      //     return tableData[time[0]][key];
+      //   });
+      //   console.log(toto);
+      // }); // Object.entries(data)?.map((time, index) => {
+      //   console.log(Object.keys(time[1]).map((key) => time[1][key]));
+      //   // console.log(index);
+      //   // Object.entries(time[1])?.map((prices) => {
+      //   //   console.log(prices);
+      //   // });
+      // });
     },
     onError: () => {
       console.log("there was an error in useTopOptions");
     },
   });
+
+  // const fusion = function (tableData) {
+  //   Object.entries(tableData)?.map((time) => {
+  //     return Object.keys(time[1]).map((key) => {
+  //       return tableData[time[0]][key];
+  //     });
+  //   });
+  // };
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
@@ -75,31 +102,31 @@ export default function OptionsProfitTable(option) {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 {tableData &&
-                  Object.entries(tableData)?.map((price) =>
-                    Object.entries(price[1])?.map((time) => (
+                  Object.entries(tableData[Object.keys(tableData)[0]]).map(
+                    (key) => (
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        {moment(parseInt(time[0])).format("DD/MM")}
+                        {moment(parseInt(key[0])).format("DD/MM")}
                       </th>
-                    ))
+                    )
                   )}
               </thead>
-              {tableData &&
-                Object.entries(tableData)?.map((time, index) =>
+              {/* {tableData &&
+                Object.entries(tableData)?.map((time) =>
                   Object.keys(time[1]).map((key) => (
                     <tbody>
                       <tr
                         className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {time[1][key]}
+                          <th> {tableData[time[0]][key]}</th>
                         </td>
                       </tr>
                     </tbody>
                   ))
-                )}
+                )} */}
             </table>
           </div>
         </div>
