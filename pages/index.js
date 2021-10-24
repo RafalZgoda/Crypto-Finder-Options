@@ -14,8 +14,8 @@ export default function Home() {
           Crypto Option Finder
         </h1>
         <span className="text-2xl pt-5 text-lg text-gray-500">
-          Find the best option on Deribit for your predicted price at a
-          specified date.
+          Find the best option on Deribit for your expected price at a specified
+          date.
         </span>{" "}
         <TopOptions />
       </main>

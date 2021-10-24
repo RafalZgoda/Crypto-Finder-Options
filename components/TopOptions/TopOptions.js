@@ -12,14 +12,15 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function TopOptions() {
-  const [symbol, setSymbol] = useState(null);
-  const [exerciceTimestamp, setExerciceTimestamp] = useState(
-    moment("15122021", "DDMMYYYY").format("x")
-  );
+function numberWithSpaces(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
 
-  const [pricePredicted, setPricePredicted] = useState();
-  const [budget, setBudget] = useState();
+export default function TopOptions() {
+  const [symbol, setSymbol] = useState("BTC");
+  const [exerciceTimestamp, setExerciceTimestamp] = useState("");
+  const [priceExpected, setPriceExpected] = useState("");
+  const [budget, setBudget] = useState("");
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +33,7 @@ export default function TopOptions() {
   useEffect(() => {
     if (optionsFound) {
       setOptions(optionsFound);
+      setSelected(optionsFound[0]);
       setIsLoading(false);
     }
     if (error) {
@@ -42,12 +44,13 @@ export default function TopOptions() {
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
-    if (symbol && exerciceTimestamp && pricePredicted) {
+    console.log(symbol && exerciceTimestamp && priceExpected);
+    if (symbol && exerciceTimestamp && priceExpected) {
       setIsLoading(true);
       searchOptions({
         symbol,
         exerciceTimestamp: moment(exerciceTimestamp).format("x"),
-        pricePredicted,
+        priceExpected,
       });
     }
   };
@@ -63,7 +66,26 @@ export default function TopOptions() {
             setSymbol(symbol);
           }}
         />
-        <div className="p-2 ">
+        <div className="p-2 mt-5">
+          <span>Predict the price</span>
+        </div>
+
+        <div className="">
+          <input
+            id="priceExpected"
+            type="priceExpected"
+            name="priceExpected"
+            value={priceExpected}
+            onChange={(event) => setPriceExpected(event.target.value)}
+            placeholder="Expected price ($)"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          />
+        </div>
+        <div className=" mt-8">
+          <span>For a date</span>
+        </div>
+
+        <div className=" ">
           <DayPicker
             selectedDays={new Date(exerciceTimestamp)}
             onDayClick={handleDayClick}
@@ -76,18 +98,9 @@ export default function TopOptions() {
           />
         </div>
 
-        <div className="p-2">
-          <input
-            id="pricePredicted"
-            type="pricePredicted"
-            name="pricePredicted"
-            value={pricePredicted}
-            onChange={(event) => setPricePredicted(event.target.value)}
-            placeholder="Predicted price ($)"
-            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-          />
+        <div className=" mt-5">
+          <span>What's your budget ?</span>
         </div>
-
         <div className="p-2">
           <input
             id="budget"
@@ -99,7 +112,6 @@ export default function TopOptions() {
             className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
           />
         </div>
-
         {isLoading ? (
           <div className="min-w-0 flex justify-center">
             <button className="flex rounded-md border border-transparent px-5 py-3 bg-gray-800 text-base font-medium text-white shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10">
@@ -134,7 +146,6 @@ export default function TopOptions() {
             Search Top Options
           </button>
         )}
-
         <div className="mt-10">
           <RadioGroup value={selected} onChange={setSelected}>
             <RadioGroup.Label className="sr-only">
@@ -168,8 +179,8 @@ export default function TopOptions() {
                           >
                             <p className="sm:inline">
                               {Math.round(budget / option.askPrice)} x @
-                              {option.askPriceBTC}
-                              {/* {Math.round(option.askPriceBTC)} */}
+                              {option.askPriceCrypto} {symbol}
+                              {/* {Math.round(option.askPriceCrypto)} */}
                             </p>
                             <p className="sm:inline"></p>
                           </RadioGroup.Description>
@@ -182,12 +193,19 @@ export default function TopOptions() {
                         <div className="font-medium text-left text-gray-900">
                           ROI :{" "}
                           <span className="text-green-400">
-                            {Math.round(option.ROI * 100, 0)} %{" "}
+                            {Math.round(option.ROI * 100, 1)} %{" "}
                           </span>
                         </div>
                         <div className="ml-1 text-gray-500  text-left sm:ml-0">
                           {" "}
-                          Profit : {Math.round(budget * option.profit)}$
+                          Profit :{" "}
+                          {numberWithSpaces(
+                            Math.round(
+                              Math.round(budget / option.askPrice) *
+                                option.profit
+                            )
+                          )}{" "}
+                          $
                         </div>
                       </RadioGroup.Description>
                       <div
@@ -209,7 +227,7 @@ export default function TopOptions() {
         <OptionProfitTable
           option={selected}
           symbol={symbol}
-          pricePredicted={pricePredicted}
+          priceExpected={priceExpected}
           budget={budget}
         />
       )}

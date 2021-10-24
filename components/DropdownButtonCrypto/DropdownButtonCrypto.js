@@ -9,7 +9,7 @@ const cryptos = [
   { name: "ETH", isActive: true },
 ];
 export default function DropdownButtonCrypto({ onSelection }) {
-  const [selectedcrypto, setSelectedcrypto] = useState(cryptos[2]);
+  const [selectedcrypto, setSelectedcrypto] = useState(cryptos[0]);
 
   const onSelectSymbol = (symbol) => {
     onSelection(symbol?.name);
@@ -17,6 +17,7 @@ export default function DropdownButtonCrypto({ onSelection }) {
   };
   return (
     <div className="relative inline-block text-left">
+      Choose a crypto
       <RadioGroup value={selectedcrypto} onChange={onSelectSymbol}>
         <RadioGroup.Label className="sr-only">Choose a crypto</RadioGroup.Label>
         <div className="grid grid-cols-2 gap-2">

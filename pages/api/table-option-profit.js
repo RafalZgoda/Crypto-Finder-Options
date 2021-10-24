@@ -1,5 +1,4 @@
 var bs = require("black-scholes");
-const moment = require("moment");
 
 const MAX_HEADERS = 15;
 const MAX_ROWS = 30;
@@ -43,7 +42,6 @@ function drawData(option, beginPrice, endPrice) {
     (option.expirationTimestamp - Date.now()) / MAX_HEADERS,
     0
   );
-
   let initDate = Date.now();
   for (let price = beginPrice; price < endPrice; price += incrementPrice) {
     data[price] = {};

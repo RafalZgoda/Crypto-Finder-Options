@@ -3,17 +3,45 @@ const axios = require("axios");
 const bluebird = require("bluebird");
 
 const OPTION_TYPE = "call";
-const CURRENT_IV = 0.8623;
 const URL_DERIBIT = "https://www.deribit.com";
 // const URL_DERIBIT = "https://test.deribit.com";
 const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 
-// TODO get Current IV
-// TODO add budget
 // TODO add the APIKEY deribit for rate limiter
 // TODO manual settings
 // TODO fix date picker
 // TODO table price with 0
+// TODO reduce call api by filter with sort timestamp
+// TODO also reduce waiting by calling freeRisk, indexPrice, volatility at loading in hooks
+// TODO show freeRisk, indexPrice, volatility
+// TODO add in table show by $ profit or % roi
+// TODO add call or put
+// TODO add IV change
+
+async function getIndexPrice(currency) {
+  let pair;
+  if (currency === "BTC") pair = "btc_usd";
+  if (currency === "ETH") pair = "eth_usd";
+  const { data } = await axios.get(
+    URL_DERIBIT + "/api/v2/public/get_index_price?index_name=" + pair
+  );
+  console.log({ indexPrice: data.result.index_price });
+  return data.result.index_price;
+}
+async function getVolatility(currency) {
+  const { data } = await axios.get(
+    URL_DERIBIT +
+      "/api/v2/public/get_volatility_index_data?currency=" +
+      currency +
+      "&end_timestamp=" +
+      Date.now() +
+      "&resolution=60&start_timestamp=" +
+      Date.now() +
+      ""
+  );
+  console.log({ volatility60s: data.result.data });
+  return data.result.data[0][4] / 100;
+}
 
 async function getOptions(currency) {
   const { data } = await axios.get(
@@ -74,7 +102,12 @@ function computeTimeToExpire(exerciceTimestamp, expirationDate) {
   return timeToExpire;
 }
 
-async function getOrderBookAndEstimatePriceForOptions(options, RISK_FREE_RATE) {
+async function getOrderBookAndEstimatePriceForOptions(
+  options,
+  CURRENT_IV,
+  RISK_FREE_RATE,
+  indexPrice
+) {
   let formattedCalls = await bluebird.Promise.map(
     options,
     async function (option) {
@@ -85,21 +118,22 @@ async function getOrderBookAndEstimatePriceForOptions(options, RISK_FREE_RATE) {
           instrument_name: option.instrument_name,
           strike: option.strike,
           underlyingPrice: underlying_price,
+          indexPrice,
           exerciceTimestamp: Date.now(),
           expirationTimestamp: option.expiration_timestamp,
           type: option.option_type,
           riskFreeRate: RISK_FREE_RATE,
           mark_iv: orderBook.mark_iv,
           implied_volatility: CURRENT_IV,
-          askPriceBTC: best_ask_price,
-          askPrice: best_ask_price * underlying_price,
+          askPriceCrypto: best_ask_price,
+          askPrice: best_ask_price * indexPrice,
         };
 
         const estimatePrice = estimateOptionPrice(formattedCall);
         formattedCall = {
           ...formattedCall,
           estimatePrice,
-          overPrice: (best_ask_price * underlying_price) / estimatePrice,
+          overPrice: (best_ask_price * indexPrice) / estimatePrice,
         };
         return formattedCall;
       } catch (error) {
@@ -115,22 +149,22 @@ async function getOrderBookAndEstimatePriceForOptions(options, RISK_FREE_RATE) {
 
 function findBestOptionsForScenario(
   options,
-  predictedExerciceTimestamp,
-  predictedUnderlyingPrice
+  expectedExerciceTimestamp,
+  expectedUnderlyingPrice
 ) {
   const optionsReturn = options
     .map((option) => {
-      if (option?.expirationTimestamp > predictedExerciceTimestamp) {
-        const estimatePredictedPrice = estimateOptionPrice({
+      if (option?.expirationTimestamp > expectedExerciceTimestamp) {
+        const estimateExpectedPrice = estimateOptionPrice({
           ...option,
-          exerciceTimestamp: predictedExerciceTimestamp,
-          underlyingPrice: predictedUnderlyingPrice,
+          exerciceTimestamp: expectedExerciceTimestamp,
+          underlyingPrice: expectedUnderlyingPrice,
         });
         return {
           ...option,
-          ROI: (estimatePredictedPrice - option.askPrice) / option.askPrice,
-          profit: estimatePredictedPrice - option.askPrice,
-          estimatePredictedPrice,
+          ROI: (estimateExpectedPrice - option.askPrice) / option.askPrice,
+          profit: estimateExpectedPrice - option.askPrice,
+          estimateExpectedPrice,
         };
       }
     })
@@ -146,8 +180,39 @@ function findBestOptionsForScenario(
   return bestOptions;
 }
 
+const filterNearestOption = (options, nearest, exerciceTimestamp) => {
+  // console.log({ calls });
+  let sortedCalls = options.sort(function (option1, option2) {
+    return option2.expiration_timestamp - option1.expiration_timestamp;
+  });
+
+  const closest = (data, target) =>
+    data.reduce((acc, obj) =>
+      Math.abs(target - obj.expiration_timestamp) <
+      Math.abs(target - acc.expiration_timestamp)
+        ? obj
+        : acc
+    );
+
+  let filteredCalls = {};
+  for (i = 0; i < nearest; i++) {
+    const nearestExpirationTimestamp = closest(sortedCalls, exerciceTimestamp)[
+      "expiration_timestamp"
+    ];
+
+    filteredCalls = {
+      ...filteredCalls,
+      nearestExpirationTimestamp: sortedCalls.filter(
+        (option) => option.expiration_timestamp === nearestExpirationTimestamp
+      ),
+    };
+    // filteredCalls = { nearestCalls, ...filteredCalls };
+  }
+  console.log({ filteredCalls: filteredCalls.nearestExpirationTimestamp });
+};
+
 module.exports = async (req, res) => {
-  let { symbol, exerciceTimestamp, pricePredicted } = req.body;
+  let { symbol, exerciceTimestamp, priceExpected } = req.body;
 
   try {
     // const bestOPtions = [
@@ -161,28 +226,32 @@ module.exports = async (req, res) => {
     //     riskFreeRate: 0.0166,
     //     mark_iv: 68.33,
     //     implied_volatility: 0.8623,
-    //     askPriceBTC: 0.1375,
+    //     askPriceCrypto: 0.1375,
     //     askPrice: 8775.019,
     //     estimatePrice: 11918.83813710379,
     //     overPrice: 0.7362310737892342,
     //     ROI: 0.44011883277216035,
     //     profit: 3862.05111983353,
-    //     estimatePredictedPrice: 12637.07011983353,
+    //     estimateExpectedPrice: 12637.07011983353,
     //   },
     // ];
     // return res.status(201).send(bestOPtions);
     const options = await getOptions(symbol);
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
+    // const nearestCalls = filterNearestOption(calls, 4, exerciceTimestamp);
+    const indexPrice = await getIndexPrice(symbol);
     const RISK_FREE_RATE = await getRiskFreeRate();
-
+    const CURRENT_IV = await getVolatility(symbol);
     let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
       calls,
-      RISK_FREE_RATE
+      CURRENT_IV,
+      RISK_FREE_RATE,
+      indexPrice
     );
     let bestOptions = await findBestOptionsForScenario(
       detailledCalls,
       exerciceTimestamp,
-      pricePredicted
+      priceExpected
     );
     console.log({ bestOptions });
     return res.status(201).send(bestOptions);

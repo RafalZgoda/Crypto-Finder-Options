@@ -6,13 +6,13 @@ import moment from "moment";
 export default function OptionsProfitTable({
   option,
   symbol,
-  pricePredicted,
+  priceExpected,
   budget,
 }) {
   const [beginPrice, setBeginPrice] = useState(
-    Math.round(option.underlyingPrice)
+    Math.round(option.indexPrice / 10) * 10
   );
-  const [endPrice, setEndPrice] = useState(pricePredicted);
+  const [endPrice, setEndPrice] = useState(priceExpected);
   const [tableData, setTableData] = useState();
   const [headers, setHeaders] = useState();
   const [prices, setPrices] = useState();
@@ -104,13 +104,13 @@ export default function OptionsProfitTable({
               <tbody>
                 {prices?.map((price, index) => (
                   <tr key={index}>
-                    <td className="sm:p-2 bg-gray-100">
+                    <td className="sm:p-1 bg-gray-100">
                       {numberWithSpaces(price)}
                     </td>
                     {Object?.values(tableData[price]).flatMap((key, i) => (
                       <td
                         className={
-                          key > 10 ? "bg-green-300	sm:p-2" : "bg-red-300	sm:p-2"
+                          key > 10 ? "bg-green-300	sm:p-1" : "bg-red-300	sm:p-1"
                         }
                         key={i}
                       >
