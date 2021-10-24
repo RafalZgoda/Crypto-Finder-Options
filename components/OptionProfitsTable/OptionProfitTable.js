@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "react-query";
-import { useOptionTableProfit } from "../../Hooks/useOptionTableProfit";
+import { useOptionTableProfit } from "../../hooks/useOptionTableProfit";
 import moment from "moment";
 export default function OptionsProfitTable(option) {
   const [beginPrice, , setBeginPrice] = useState("50000");
