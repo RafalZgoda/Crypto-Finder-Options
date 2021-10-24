@@ -1,55 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "react-query";
 import { useOptionTableProfit } from "../../hooks/useOptionTableProfit";
 import moment from "moment";
 
-export default function OptionsProfitTable(option) {
+export default function OptionsProfitTable({ option, symbol }) {
   const [beginPrice, , setBeginPrice] = useState("50000");
   const [endPrice, setEndPrice] = useState("120000");
-  const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState();
+  const [headers, setHeaders] = useState();
+  const [prices, setPrices] = useState();
 
-  const { mutate, data, isSuccess } = useMutation(useOptionTableProfit, {
-    onSuccess: (data) => {
-      // console.log({ data });
-      setTableData(data);
-      Object.entries(tableData)?.map((time) => {
-        const toto = Object.keys(time[1]).map((key) => {
-          // console.log(time[1][key]);
-          return time[1][key];
-        });
-        console.log({ toto });
-      });
+  const {
+    mutate,
+    data: optionsTableProfit,
+    isSuccess,
+  } = useMutation(useOptionTableProfit);
 
-      // Object.entries(tableData[Object.keys(tableData)[0]]).map((key) => {
-      //   console.log(key[0]);
+  useEffect(() => {
+    if (optionsTableProfit && isSuccess) {
+      console.log(optionsTableProfit);
+      const pricesFound = Object.keys(optionsTableProfit);
+      const headersDates = Object.keys(optionsTableProfit[pricesFound[0]]);
+
+      // const headersDates = pricesFound.flatMap((price) => {
+      //   return Object.keys(optionsTableProfit[price]);
       // });
-      // Object.entries(tableData)?.map((time, index) => {
-      //   // console.log(time);
-      //   const toto = Object.keys(time[1]).map((key) => {
-      //     // console.log(tableData[time[0]][key]);
-      //     return tableData[time[0]][key];
-      //   });
-      //   console.log(toto);
-      // }); // Object.entries(data)?.map((time, index) => {
-      //   console.log(Object.keys(time[1]).map((key) => time[1][key]));
-      //   // console.log(index);
-      //   // Object.entries(time[1])?.map((prices) => {
-      //   //   console.log(prices);
-      //   // });
-      // });
-    },
-    onError: () => {
-      console.log("there was an error in useTopOptions");
-    },
-  });
-
-  // const fusion = function (tableData) {
-  //   Object.entries(tableData)?.map((time) => {
-  //     return Object.keys(time[1]).map((key) => {
-  //       return tableData[time[0]][key];
-  //     });
-  //   });
-  // };
+      setPrices(pricesFound);
+      setHeaders(headersDates);
+      setTableData(optionsTableProfit);
+    }
+  }, [optionsTableProfit, isSuccess]);
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
@@ -62,9 +42,13 @@ export default function OptionsProfitTable(option) {
     }
   };
 
+  console.log({ tableData });
+  console.log({ headers });
+  console.log({ prices });
   return (
-    <div className="flex flex-col">
-      <div className="min-w-0 flex-1">
+    <>
+      <div className="grid grid-cols-2 gap-4 mt-10 ">
+        <span className="underline text-xl">Begin Price</span>
         <input
           id="beginPrice"
           type="beginPrice"
@@ -72,11 +56,10 @@ export default function OptionsProfitTable(option) {
           value={beginPrice}
           onChange={(event) => setBeginPrice(event.target.value)}
           placeholder="Enter your beginPrice"
-          className="block w-full px-4 py-3 rounded-md border-0 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          className=" px-4 py-3 rounded-md border-4 text-base text-gray-900 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
         />
-      </div>
+        <span className="underline text-xl">End Price</span>
 
-      <div className="min-w-0 flex-1">
         <input
           id="endPrice"
           type="endPrice"
@@ -84,53 +67,42 @@ export default function OptionsProfitTable(option) {
           value={endPrice}
           onChange={(event) => setEndPrice(event.target.value)}
           placeholder="Enter your endPrice"
-          className="block w-full px-4 py-3 rounded-md border-0 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          className="block w-full px-4 py-3 rounded-md border-4  text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
         />
       </div>
-      <div className="mt-3 sm:mt-0 sm:ml-3">
-        <button
-          onClick={onSubmitHandler}
-          className="block w-full py-3 px-4 rounded-md shadow bg-yellow-500 text-white font-medium hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-        >
-          Show table
-        </button>
-      </div>
+      <button
+        onClick={onSubmitHandler}
+        className=" py-3 px-4 mt-10 rounded-md shadow bg-green-500 text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-gray-900"
+      >
+        Show table
+      </button>
+      {headers && prices && tableData && (
+        <div className="mt-10">
+          <table>
+            <thead className="bg-red-50">
+              <tr key={Math.random()}>
+                {symbol}
+                {headers?.map((time) => (
+                  <th>{moment(parseInt(time)).format("DD/MM")}</th>
+                ))}
+              </tr>
+            </thead>
+            {prices && (
+              <tbody>
+                {prices?.map((price, index) => (
+                  <tr key={index}>
+                    {price}
 
-      <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                {tableData &&
-                  Object.entries(tableData[Object.keys(tableData)[0]]).map(
-                    (key) => (
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {moment(parseInt(key[0])).format("DD/MM")}
-                      </th>
-                    )
-                  )}
-              </thead>
-              {/* {tableData &&
-                Object.entries(tableData)?.map((time) =>
-                  Object.keys(time[1]).map((key) => (
-                    <tbody>
-                      <tr
-                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          <th> {tableData[time[0]][key]}</th>
-                        </td>
-                      </tr>
-                    </tbody>
-                  ))
-                )} */}
-            </table>
-          </div>
+                    {Object?.values(tableData[price]).flatMap((key, i) => (
+                      <td key={i}>{Math.round(key)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            )}
+          </table>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

@@ -14,9 +14,7 @@ export default function Home() {
           Welcome to <a className="text-blue-600">Crypto Option Finder!</a>
         </h1>
 
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <TopOptions />
-        </div>
+        <TopOptions />
       </main>
       <footer className="flex items-center justify-center w-full h-24 border-t">
         <a

@@ -6,7 +6,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function DropdownButtonCrypto() {
+export default function DropdownButtonCrypto(onSelection) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
@@ -29,28 +29,30 @@ export default function DropdownButtonCrypto() {
           <div className="py-1">
             <Menu.Item>
               {({ active }) => (
-                <a
+                <button
                   href="#"
+                  onClick={onSelection("BTC")}
                   className={classNames(
                     active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                     "block px-4 py-2 text-sm"
                   )}
                 >
                   BTC
-                </a>
+                </button>
               )}
             </Menu.Item>
             <Menu.Item>
               {({ active }) => (
-                <a
+                <button
                   href="#"
+                  onClick={onSelection("ETH")}
                   className={classNames(
                     active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                     "block px-4 py-2 text-sm"
                   )}
                 >
                   ETH
-                </a>
+                </button>
               )}
             </Menu.Item>
           </div>

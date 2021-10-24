@@ -1,16 +1,16 @@
-import { useState } from "react";
-// import axios from "axios";
-import { useTopOptions } from "../../hooks/useTopOptions";
-import { useMutation } from "react-query";
 import { RadioGroup } from "@headlessui/react";
-import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
 import moment from "moment";
+import { useState, useEffect } from "react";
+import { useMutation } from "react-query";
+import { useTopOptions } from "../../hooks/useTopOptions";
+import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
+import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
+import DayPickerInput from "react-day-picker/DayPickerInput";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-// import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
 export default function TopOptions() {
   const [symbol, setSymbol] = useState("BTC");
   const [exerciceTimestamp, setExerciceTimestamp] = useState(
@@ -19,146 +19,193 @@ export default function TopOptions() {
   const [pricePredicted, setPricePredicted] = useState("70000");
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { mutate, data, isSuccess } = useMutation(useTopOptions, {
-    onSuccess: (data) => {
-      console.log({ data });
-      setOptions(data);
-    },
-    onError: () => {
-      console.log("there was an error in useTopOptions");
-    },
-  });
+  const {
+    mutate: searchOptions,
+    data: optionsFound,
+    error,
+  } = useMutation(useTopOptions);
+
+  useEffect(() => {
+    if (optionsFound) {
+      setOptions(optionsFound);
+      setIsLoading(false);
+    }
+    if (error) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }, [optionsFound, error]);
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
     if (symbol && exerciceTimestamp && pricePredicted) {
-      mutate({
+      setIsLoading(true);
+      searchOptions({
         symbol,
         exerciceTimestamp,
         pricePredicted,
       });
     }
   };
+  const onSelection = (symbol) => {
+    setSymbol(symbol);
+  };
 
   return (
-    <div className="flex flex-col">
-      <div className="min-w-0 flex-1">
-        <input
-          id="exerciceTimestamp"
-          type="exerciceTimestamp"
-          name="exerciceTimestamp"
-          value={exerciceTimestamp}
-          onChange={(event) => setExerciceTimestamp(event.target.value)}
-          placeholder="Enter your exerciceTimestamp"
-          className="block w-full px-4 py-3 rounded-md border-0 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-        />
-      </div>
+    <>
+      <div className="mt-10 ">
+        <div className="p-2 ">
+          <input
+            id="exerciceTimestamp"
+            type="exerciceTimestamp"
+            name="exerciceTimestamp"
+            value={exerciceTimestamp}
+            onChange={(event) => setExerciceTimestamp(event.target.value)}
+            placeholder="Enter your exerciceTimestamp"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          />
+        </div>
+        <div className="p-2 ">
+          <DayPickerInput
+            selectedDay={exerciceTimestamp}
+            onDayChange={(day) => setExerciceTimestamp(day)}
+          />
+        </div>
+        <DropdownButtonCrypto onSelection />
+        <div className="p-2 ">
+          <input
+            id="symbol"
+            type="symbol"
+            name="symbol"
+            value={symbol}
+            onChange={(event) => setSymbol(event.target.value)}
+            placeholder="Enter your symbol"
+            className=" px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          />
+        </div>
 
-      <div className="min-w-0 flex-1">
-        <input
-          id="symbol"
-          type="symbol"
-          name="symbol"
-          value={symbol}
-          onChange={(event) => setSymbol(event.target.value)}
-          placeholder="Enter your symbol"
-          className="block w-full px-4 py-3 rounded-md border-0 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-        />
-      </div>
+        <div className="p-2">
+          <input
+            id="pricePredicted"
+            type="pricePredicted"
+            name="pricePredicted"
+            value={pricePredicted}
+            onChange={(event) => setPricePredicted(event.target.value)}
+            placeholder="Enter your pricePredicted"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          />
+        </div>
 
-      <div className="min-w-0 flex-1">
-        <input
-          id="pricePredicted"
-          type="pricePredicted"
-          name="pricePredicted"
-          value={pricePredicted}
-          onChange={(event) => setPricePredicted(event.target.value)}
-          placeholder="Enter your pricePredicted"
-          className="block w-full px-4 py-3 rounded-md border-0 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-        />
-      </div>
-
-      {/* <DropdownButtonCrypto /> */}
-      <div className="mt-3 sm:mt-0 sm:ml-3">
-        <button
-          onClick={onSubmitHandler}
-          className="block w-full py-3 px-4 rounded-md shadow bg-yellow-500 text-white font-medium hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-        >
-          submit
-        </button>
-      </div>
-
-      <RadioGroup value={selected} onChange={setSelected}>
-        <RadioGroup.Label className="sr-only">
-          Top 5 Options order by ROI
-        </RadioGroup.Label>
-        <div className="space-y-4">
-          {options?.map((option) => (
-            <RadioGroup.Option
-              key={option.instrument_name}
-              value={option}
-              className={({ active }) =>
-                classNames(
-                  active ? "ring-1 ring-offset-2 ring-indigo-500" : "",
-                  "relative block rounded-lg border border-gray-300 bg-white shadow-sm px-6 py-4 cursor-pointer hover:border-gray-400 sm:flex sm:justify-between focus:outline-none"
-                )
-              }
+        {isLoading ? (
+          <button className="  rounded-md border border-transparent px-5 py-3 bg-gray-800 text-base font-medium text-white shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10">
+            <svg
+              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
             >
-              {({ checked }) => (
-                <>
-                  <div className="flex items-center">
-                    <div className="text-sm">
-                      <RadioGroup.Label
-                        as="p"
-                        className="font-medium text-gray-900"
-                      >
-                        {option.instrument_name}
-                      </RadioGroup.Label>
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Loading
+          </button>
+        ) : (
+          <button
+            onClick={onSubmitHandler}
+            className=" rounded-md border border-transparent px-5 py-3 bg-gray-700 text-base font-medium text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10"
+          >
+            Search Options
+          </button>
+        )}
+
+        <div className="mt-10">
+          <RadioGroup value={selected} onChange={setSelected}>
+            <RadioGroup.Label className="sr-only">
+              Top 5 Options order by ROI
+            </RadioGroup.Label>
+            <div className="space-y-4">
+              {options?.map((option) => (
+                <RadioGroup.Option
+                  key={option.instrument_name}
+                  value={option}
+                  className={({ active }) =>
+                    classNames(
+                      active ? "ring-1 ring-offset-2 ring-indigo-500" : "",
+                      "relative block rounded-lg border border-gray-300 bg-white shadow-sm px-6 py-4 cursor-pointer hover:border-gray-400 sm:flex sm:justify-between focus:outline-none"
+                    )
+                  }
+                >
+                  {({ checked }) => (
+                    <>
+                      <div className="flex items-center">
+                        <div className="text-sm">
+                          <RadioGroup.Label
+                            as="p"
+                            className="font-medium text-gray-900"
+                          >
+                            {option.instrument_name}
+                          </RadioGroup.Label>
+                          <RadioGroup.Description
+                            as="div"
+                            className="text-gray-500"
+                          >
+                            <p className="sm:inline">
+                              Estimated projected Price :{" "}
+                              {Math.round(option.estimatePredictedPrice)} $
+                              Current buying price {Math.round(option.askPrice)}{" "}
+                              $
+                            </p>
+                            <span
+                              className="hidden sm:inline sm:mx-1"
+                              aria-hidden="true"
+                            >
+                              &middot;
+                            </span>
+                            <p className="sm:inline">
+                              {" "}
+                              ROI {Math.round(option.ROI * 100, 0)} %
+                            </p>
+                          </RadioGroup.Description>
+                        </div>
+                      </div>
                       <RadioGroup.Description
                         as="div"
-                        className="text-gray-500"
+                        className="mt-2  text-sm sm:mt-0 sm:block sm:ml-4 sm:text-right"
                       >
-                        <p className="sm:inline">
-                          Estimated projected Price :{" "}
-                          {Math.round(option.estimatePredictedPrice)} $ Current
-                          buying price {Math.round(option.askPrice)} $
-                        </p>{" "}
-                        <span
-                          className="hidden sm:inline sm:mx-1"
-                          aria-hidden="true"
-                        >
-                          &middot;
-                        </span>{" "}
-                        <p className="sm:inline">
-                          ROI {Math.round(option.ROI * 100, 0)} %
-                        </p>
+                        <div className="font-medium text-gray-900">
+                          Profit :{option.profit}
+                        </div>
+                        <div className="ml-1 text-gray-500 sm:ml-0">/mo</div>
                       </RadioGroup.Description>
-                    </div>
-                  </div>
-                  <RadioGroup.Description
-                    as="div"
-                    className="mt-2 flex text-sm sm:mt-0 sm:block sm:ml-4 sm:text-right"
-                  >
-                    <div className="font-medium text-gray-900">
-                      Profit :{option.profit}
-                    </div>
-                    <div className="ml-1 text-gray-500 sm:ml-0">$</div>
-                  </RadioGroup.Description>
-                  <div
-                    className={classNames(
-                      checked ? "border-indigo-500" : "border-transparent",
-                      "absolute -inset-px rounded-lg border-2 pointer-events-none"
-                    )}
-                    aria-hidden="true"
-                  />
-                </>
-              )}
-            </RadioGroup.Option>
-          ))}
+                      <div
+                        className={classNames(
+                          checked ? "border-indigo-500" : "border-transparent",
+                          "absolute -inset-px rounded-lg border-2 pointer-events-none"
+                        )}
+                        aria-hidden="true"
+                      />
+                    </>
+                  )}
+                </RadioGroup.Option>
+              ))}
+            </div>
+          </RadioGroup>
         </div>
-      </RadioGroup>
-      {selected && <OptionProfitTable option={selected} />}
-    </div>
+      </div>
+      {selected && <OptionProfitTable option={selected} symbol={symbol} />}
+    </>
   );
 }
