@@ -6,6 +6,9 @@ import { useTopOptions } from "../../hooks/useTopOptions";
 import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
 import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
 import DayPickerInput from "react-day-picker/DayPickerInput";
+import DayPicker from "react-day-picker";
+
+import "react-day-picker/lib/style.css";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -20,7 +23,6 @@ export default function TopOptions() {
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
   const [isLoading, setIsLoading] = useState(false);
-
   const {
     mutate: searchOptions,
     data: optionsFound,
@@ -49,32 +51,27 @@ export default function TopOptions() {
       });
     }
   };
-  const onSelection = (symbol) => {
-    setSymbol(symbol);
+  const handleDayClick = (day) => {
+    console.log({ day });
+    setExerciceTimestamp(moment(day).format("x"));
   };
 
   return (
     <>
       <div className="mt-10 ">
         <div className="p-2 ">
-          <input
-            id="exerciceTimestamp"
-            type="exerciceTimestamp"
-            name="exerciceTimestamp"
-            value={exerciceTimestamp}
-            onChange={(event) => setExerciceTimestamp(event.target.value)}
-            placeholder="Enter your exerciceTimestamp"
-            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+          <DayPicker
+            selectedDays={exerciceTimestamp}
+            onDayClick={handleDayClick}
           />
         </div>
-        <div className="p-2 ">
-          <DayPickerInput
-            selectedDay={exerciceTimestamp}
-            onDayChange={(day) => setExerciceTimestamp(day)}
-          />
-        </div>
-        <DropdownButtonCrypto onSelection />
-        <div className="p-2 ">
+        <DropdownButtonCrypto
+          onSelection={(symbol) => {
+            console.log({ symbol });
+            setSymbol(symbol);
+          }}
+        />
+        {/* <div className="p-2 ">
           <input
             id="symbol"
             type="symbol"
@@ -84,7 +81,7 @@ export default function TopOptions() {
             placeholder="Enter your symbol"
             className=" px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
           />
-        </div>
+        </div> */}
 
         <div className="p-2">
           <input

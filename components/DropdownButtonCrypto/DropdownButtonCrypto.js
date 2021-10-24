@@ -1,63 +1,104 @@
-import { Fragment } from "react";
-import { Menu, Transition } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/solid";
+import { useState } from "react";
+import { RadioGroup } from "@headlessui/react";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
+const cryptos = [
+  { name: "BTC", inStock: true },
+  { name: "ETH", inStock: true },
+];
+export default function DropdownButtonCrypto({ onSelection }) {
+  const [selectedcrypto, setSelectedcrypto] = useState(cryptos[2]);
 
-export default function DropdownButtonCrypto(onSelection) {
+  const onSelectSymbol = (symbol) => {
+    onSelection(symbol);
+    setSelectedcrypto(symbol);
+  };
   return (
-    <Menu as="div" className="relative inline-block text-left">
-      <div>
-        <Menu.Button className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-          Select cryptocurrency
-          <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
-        </Menu.Button>
-      </div>
+    <>
+      {/* <Menu as="div" className="relative inline-block text-left">
+        <div>
+          <Menu.Button className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
+            Select cryptocurrency
+            <ChevronDownIcon
+              className="-mr-1 ml-2 h-5 w-5"
+              aria-hidden="true"
+            />
+          </Menu.Button>
+        </div>
 
-      <Transition
-        as={Fragment}
-        enter="transition ease-out duration-100"
-        enterFrom="transform opacity-0 scale-95"
-        enterTo="transform opacity-100 scale-100"
-        leave="transition ease-in duration-75"
-        leaveFrom="transform opacity-100 scale-100"
-        leaveTo="transform opacity-0 scale-95"
-      >
-        <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-          <div className="py-1">
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  href="#"
-                  onClick={onSelection("BTC")}
-                  className={classNames(
-                    active ? "bg-gray-100 text-gray-900" : "text-gray-700",
-                    "block px-4 py-2 text-sm"
-                  )}
-                >
-                  BTC
-                </button>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  href="#"
-                  onClick={onSelection("ETH")}
-                  className={classNames(
-                    active ? "bg-gray-100 text-gray-900" : "text-gray-700",
-                    "block px-4 py-2 text-sm"
-                  )}
-                >
-                  ETH
-                </button>
-              )}
-            </Menu.Item>
+        <Transition
+          as={Fragment}
+          enter="transition ease-out duration-100"
+          enterFrom="transform opacity-0 scale-95"
+          enterTo="transform opacity-100 scale-100"
+          leave="transition ease-in duration-75"
+          leaveFrom="transform opacity-100 scale-100"
+          leaveTo="transform opacity-0 scale-95"
+        >
+          <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <div className="py-1">
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={onSelection("BTC")}
+                    className={classNames(
+                      active ? "bg-gray-100 text-gray-900" : "text-gray-700",
+                      "block px-4 py-2 text-sm"
+                    )}
+                  >
+                    BTC
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={onSelection("ETH")}
+                    className={classNames(
+                      active ? "bg-gray-100 text-gray-900" : "text-gray-700",
+                      "block px-4 py-2 text-sm"
+                    )}
+                  >
+                    ETH
+                  </button>
+                )}
+              </Menu.Item>
+            </div>
+          </Menu.Items>
+        </Transition>
+      </Menu> */}
+      <div className="relative inline-block text-left">
+        <RadioGroup value={selectedcrypto} onChange={onSelectSymbol}>
+          <RadioGroup.Label className="sr-only">
+            Choose a crypto
+          </RadioGroup.Label>
+          <div className="grid grid-cols-2 gap-2">
+            {cryptos.map((crypto) => (
+              <RadioGroup.Option
+                key={crypto.name}
+                value={crypto}
+                className={({ active, checked }) =>
+                  classNames(
+                    crypto.inStock
+                      ? "cursor-pointer focus:outline-none"
+                      : "opacity-25 cursor-not-allowed",
+                    active ? "ring-2 ring-offset-2 ring-indigo-500" : "",
+                    checked
+                      ? "bg-indigo-600 border-transparent text-white hover:bg-indigo-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50",
+                    "border rounded-md py-3 px-3 flex items-center justify-center text-sm font-medium uppercase sm:flex-1"
+                  )
+                }
+                disabled={!crypto.inStock}
+              >
+                <RadioGroup.Label as="p">{crypto.name}</RadioGroup.Label>
+              </RadioGroup.Option>
+            ))}
           </div>
-        </Menu.Items>
-      </Transition>
-    </Menu>
+        </RadioGroup>
+      </div>
+    </>
   );
 }
