@@ -3,9 +3,16 @@ import { useMutation } from "react-query";
 import { useOptionTableProfit } from "../../hooks/useOptionTableProfit";
 import moment from "moment";
 
-export default function OptionsProfitTable({ option, symbol }) {
-  const [beginPrice, , setBeginPrice] = useState("50000");
-  const [endPrice, setEndPrice] = useState("120000");
+export default function OptionsProfitTable({
+  option,
+  symbol,
+  pricePredicted,
+  budget,
+}) {
+  const [beginPrice, setBeginPrice] = useState(
+    Math.round(option.underlyingPrice)
+  );
+  const [endPrice, setEndPrice] = useState(pricePredicted);
   const [tableData, setTableData] = useState();
   const [headers, setHeaders] = useState();
   const [prices, setPrices] = useState();
@@ -41,32 +48,39 @@ export default function OptionsProfitTable({ option, symbol }) {
     }
   };
 
+  function numberWithSpaces(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 mt-10 ">
-        <span className="text-xl"> </span>
-        <span className="text-xl">Price range</span>
+      {headers && prices && tableData && (
+        <>
+          {" "}
+          <span className="text-xl mt-10 "> Price range</span>
+          <div className="grid grid-cols-2 gap-4 ">
+            <input
+              id="beginPrice"
+              type="beginPrice"
+              name="beginPrice"
+              value={beginPrice}
+              onChange={(event) => setBeginPrice(event.target.value)}
+              placeholder="Enter your beginPrice"
+              className=" px-4 py-3 rounded-md border-4 text-base text-gray-900 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
+            />
 
-        <input
-          id="beginPrice"
-          type="beginPrice"
-          name="beginPrice"
-          value={beginPrice}
-          onChange={(event) => setBeginPrice(event.target.value)}
-          placeholder="Enter your beginPrice"
-          className=" px-4 py-3 rounded-md border-4 text-base text-gray-900 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
-        />
-
-        <input
-          id="endPrice"
-          type="endPrice"
-          name="endPrice"
-          value={endPrice}
-          onChange={(event) => setEndPrice(event.target.value)}
-          placeholder="Enter your endPrice"
-          className="block w-full px-4 py-3 rounded-md border-4  text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
-        />
-      </div>
+            <input
+              id="endPrice"
+              type="endPrice"
+              name="endPrice"
+              value={endPrice}
+              onChange={(event) => setEndPrice(event.target.value)}
+              placeholder="Enter your endPrice"
+              className="block w-full px-4 py-3 rounded-md border-4  text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-green-900"
+            />
+          </div>
+        </>
+      )}
       <button
         onClick={onSubmitHandler}
         className=" py-3 px-4 mt-10 rounded-md shadow bg-green-500 text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300 focus:ring-offset-gray-900"
@@ -78,9 +92,11 @@ export default function OptionsProfitTable({ option, symbol }) {
           <table>
             <thead className="bg-red-50">
               <tr key={Math.random()}>
-                {symbol}
+                <th className="sm:p-2 bg-gray-200">{symbol} </th>
                 {headers?.map((time, index) => (
-                  <th key={index}>{moment(parseInt(time)).format("DD/MM")}</th>
+                  <th className="sm:p-2 bg-gray-100" key={index}>
+                    {moment(parseInt(time)).format("DD/MM")}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -88,13 +104,20 @@ export default function OptionsProfitTable({ option, symbol }) {
               <tbody>
                 {prices?.map((price, index) => (
                   <tr key={index}>
-                    {price}$
+                    <td className="sm:p-2 bg-gray-100">
+                      {numberWithSpaces(price)}
+                    </td>
                     {Object?.values(tableData[price]).flatMap((key, i) => (
                       <td
-                        className={key > 10 ? "bg-green-500	" : "bg-red-500	"}
+                        className={
+                          key > 10 ? "bg-green-300	sm:p-2" : "bg-red-300	sm:p-2"
+                        }
                         key={i}
                       >
-                        {Math.round(key)}$
+                        {numberWithSpaces(
+                          Math.round(key * Math.round(budget / option.askPrice))
+                        )}
+                        $
                       </td>
                     ))}
                   </tr>

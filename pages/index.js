@@ -10,20 +10,25 @@ export default function Home() {
       </Head>
 
       <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to <a className="text-blue-600">Crypto Option Finder!</a>
+        <h1 className="font-extrabold text-6xl tracking-tight text-gray-900">
+          Crypto Option Finder
         </h1>
-
+        <span className="text-2xl pt-5 text-lg text-gray-500">
+          Find the best option on Deribit for your predicted price at a
+          specified date.
+        </span>{" "}
         <TopOptions />
       </main>
-      <footer className="flex items-center justify-center w-full h-24 border-t">
+      <footer className="flex items-center justify-center w-full mt-10 h-24 border-t">
+        Powered by
         <a
           className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          href="https://digitalassetsolutions.fr/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by Digital Asset Solutions{""}
+          {" "}
+          Digital Asset Solutions
         </a>
       </footer>
     </div>
