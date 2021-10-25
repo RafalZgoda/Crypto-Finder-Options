@@ -20,7 +20,7 @@ export default function Home() {
         <TopOptions />
       </main>
       <footer className="flex items-center justify-center w-full mt-10 h-24 border-t">
-        Powered by
+        <span>Powered by </span>
         <a
           className="flex items-center justify-center"
           href="https://digitalassetsolutions.fr/"
@@ -28,7 +28,7 @@ export default function Home() {
           rel="noopener noreferrer"
         >
           {" "}
-          Digital Asset Solutions
+          &nbsp;Digital Asset Solutions
         </a>
       </footer>
     </div>
