@@ -26,7 +26,6 @@ const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 //   const { data } = await axios.get(
 //     URL_DERIBIT + "/api/v2/public/get_index_price?index_name=" + pair
 //   );
-//   console.log({ indexPrice: data.result.index_price });
 //   return data.result.index_price;
 // }
 async function getVolatility(currency) {
@@ -62,7 +61,6 @@ async function getOptions(currency) {
 //     "https://data.nasdaq.com/api/v3/datasets/USTREASURY/YIELD.json?api_key=" +
 //       API_KEY_NASDAQ
 //   );
-//   console.log({ riskFreeRate: data.dataset.data[0][10] });
 //   const riskFreeRate = data.dataset.data[0][10] / 100 || 0.0166;
 //   return riskFreeRate;
 // }
@@ -186,9 +184,11 @@ function findBestOptionsForScenario(
 }
 
 const filterNearestOption = (options, nearest, exerciceTimestamp) => {
-  // console.log({ calls });
   let sortedCalls = options.sort(function (option1, option2) {
     return option2.expiration_timestamp - option1.expiration_timestamp;
+  });
+  sortedCalls = options.filter(function (option) {
+    return option.expiration_timestamp > exerciceTimestamp;
   });
 
   const closest = (data, target) =>
@@ -226,26 +226,38 @@ const filterNearestOption = (options, nearest, exerciceTimestamp) => {
 module.exports = async (req, res) => {
   let { symbol, exerciceTimestamp, priceExpected, riskFreeRate, marketInfo } =
     req.body;
-  console.log({ priceExpected });
+  const beginTime = Date.now();
   try {
+    console.log({ getOptions: Date.now() - beginTime });
+
     const options = await getOptions(symbol);
+    console.log({ getOptions: Date.now() - beginTime });
+
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
-    const nearestCalls = filterNearestOption(calls, 7, exerciceTimestamp);
+    const nearestOptions = filterNearestOption(calls, 3, exerciceTimestamp); // 7 nearest expiration_timestamp options
+    console.log({ nearestOptions: Date.now() - beginTime });
+    // console.log({ nearestOptions });
     // const CURRENT_IV = await getVolatility(symbol);
-    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
-      nearestCalls,
+    let detailledOptions = await getOrderBookAndEstimatePriceForOptions(
+      nearestOptions,
       marketInfo.volatility,
       //CURRENT_IV,
       riskFreeRate,
       marketInfo.index
     );
-    let bestOptions = [];
-    // await findBestOptionsForScenario(
-    //   detailledCalls,
-    //   exerciceTimestamp,
-    //   priceExpected
-    // );
+    console.log({
+      getOrderBookAndEstimatePriceForOptions: Date.now() - beginTime,
+    });
+
+    const bestOptions = await findBestOptionsForScenario(
+      detailledOptions,
+      exerciceTimestamp,
+      priceExpected
+    );
+
     // console.log({ bestOptions });
+    console.log({ findBestOptionsForScenario: Date.now() - beginTime });
+
     return res.status(200).send(bestOptions);
     const bestOPtions = [
       {

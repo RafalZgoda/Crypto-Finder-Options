@@ -10,7 +10,6 @@ async function getIndexPrice(currency) {
   const { data } = await axios.get(
     URL_DERIBIT + "/api/v2/public/get_index_price?index_name=" + pair
   );
-  console.log({ indexPrice: data.result.index_price });
   return data.result.index_price;
 }
 
@@ -28,7 +27,6 @@ async function getVolatility(currency) {
   const volatilityInfo = data.result.data;
   const lastIndex = volatilityInfo.length - 1;
   const closeVolatility = volatilityInfo[lastIndex][4] / 100;
-  console.log({ closeVolatility });
   return closeVolatility;
 }
 
@@ -37,7 +35,6 @@ async function getRiskFreeRate() {
     "https://data.nasdaq.com/api/v3/datasets/USTREASURY/YIELD.json?api_key=" +
       API_KEY_NASDAQ
   );
-  console.log({ riskFreeRate: data.dataset.data[0][10] });
   const riskFreeRate = data.dataset.data[0][10] / 100 || 0.0166;
   return riskFreeRate;
 }
