@@ -215,25 +215,25 @@ module.exports = async (req, res) => {
   let { symbol, exerciceTimestamp, priceExpected } = req.body;
 
   try {
-    const options = await getOptions(symbol);
-    let calls = options.filter((option) => option.option_type === OPTION_TYPE);
-    // const nearestCalls = filterNearestOption(calls, 4, exerciceTimestamp);
-    const indexPrice = await getIndexPrice(symbol);
-    const RISK_FREE_RATE = await getRiskFreeRate();
-    const CURRENT_IV = await getVolatility(symbol);
-    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
-      calls,
-      CURRENT_IV,
-      RISK_FREE_RATE,
-      indexPrice
-    );
-    let bestOptions = await findBestOptionsForScenario(
-      detailledCalls,
-      exerciceTimestamp,
-      priceExpected
-    );
-    console.log({ bestOptions });
-    return res.status(201).send(bestOptions);
+    // const options = await getOptions(symbol);
+    // let calls = options.filter((option) => option.option_type === OPTION_TYPE);
+    // // const nearestCalls = filterNearestOption(calls, 4, exerciceTimestamp);
+    // const indexPrice = await getIndexPrice(symbol);
+    // const RISK_FREE_RATE = await getRiskFreeRate();
+    // const CURRENT_IV = await getVolatility(symbol);
+    // let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
+    //   calls,
+    //   CURRENT_IV,
+    //   RISK_FREE_RATE,
+    //   indexPrice
+    // );
+    // let bestOptions = await findBestOptionsForScenario(
+    //   detailledCalls,
+    //   exerciceTimestamp,
+    //   priceExpected
+    // );
+    // console.log({ bestOptions });
+    return res.status(201).send("bestOptions");
   } catch (error) {
     console.error({ error });
     return res.status(500).send(error);
