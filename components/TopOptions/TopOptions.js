@@ -5,9 +5,10 @@ import { useMutation } from "react-query";
 import { useTopOptions } from "../../hooks/useTopOptions";
 import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
 import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
-import DayPicker from "react-day-picker";
-import "react-day-picker/lib/style.css";
 import DayPickerInput from "react-day-picker/DayPickerInput";
+import { useMarketData } from "../../Hooks/useMarketData";
+import "react-day-picker/lib/style.css";
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -24,6 +25,26 @@ export default function TopOptions() {
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [riskFreeRate, setRiskFreeRate] = useState();
+  const [marketInfo, setMarketInfo] = useState({});
+
+  const { data: marketData, error: errorMarketData } = useMarketData();
+
+  useEffect(() => {
+    if (marketData) {
+      setRiskFreeRate(marketData.RISK_FREE_RATE);
+      setMarketInfo(
+        marketData.marketInfos.find(
+          (_marketInfo) => _marketInfo.symbol === symbol
+        )
+      );
+      console.log({ marketInfo });
+    }
+    if (errorMarketData) {
+      console.log(errorMarketData);
+    }
+  }, [marketData, errorMarketData, symbol]);
+
   const {
     mutate: searchOptions,
     data: optionsFound,
@@ -45,12 +66,14 @@ export default function TopOptions() {
   const onSubmitHandler = (event) => {
     event.preventDefault();
     console.log(symbol && exerciceTimestamp && priceExpected);
-    if (symbol && exerciceTimestamp && priceExpected) {
+    if (symbol && exerciceTimestamp && priceExpected && riskFreeRate) {
       setIsLoading(true);
       searchOptions({
         symbol,
         exerciceTimestamp: moment(exerciceTimestamp).format("x"),
         priceExpected,
+        riskFreeRate,
+        marketInfo,
       });
     }
   };
@@ -60,13 +83,36 @@ export default function TopOptions() {
 
   return (
     <>
-      <div className="mt-10 ">
-        <DropdownButtonCrypto
-          onSelection={(symbol) => {
-            setSymbol(symbol);
-          }}
-        />
-        <div className="p-2 ">
+      <div className="mt-8 ">
+        {marketData && (
+          <DropdownButtonCrypto
+            onSelection={(symbol) => {
+              setSymbol(symbol);
+              const marketInfoFound = marketData.marketInfos.find(
+                (_marketInfo) => _marketInfo.symbol === symbol
+              );
+              setMarketInfo({ marketInfoFound, symbol });
+              // console.log({ marketInfo });
+            }}
+          />
+        )}
+        <div className=" mt-5">
+          <span>Predict the price (current price : {marketInfo.index} $)</span>
+        </div>
+        <div className="pt-0">
+          <input
+            id="priceExpected"
+            type="number"
+            value={priceExpected}
+            onChange={(event) => setPriceExpected(event.target.value)}
+            placeholder="Predicted price ($)"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2  focus:ring-offset-indigo-900"
+          />
+        </div>
+        <div className=" mt-5">
+          <span>For a date</span>
+        </div>{" "}
+        <div className="pt-0 ">
           <DayPickerInput
             selectedDays={new Date(exerciceTimestamp)}
             onDayClick={handleDayClick}
@@ -91,18 +137,10 @@ export default function TopOptions() {
             onDayChange={handleDayClick}
           />
         </div>
-
-        <div className="p-2">
-          <input
-            id="priceExpected"
-            type="number"
-            value={priceExpected}
-            onChange={(event) => setPriceExpected(event.target.value)}
-            placeholder="Predicted price ($)"
-            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2  focus:ring-offset-indigo-900"
-          />
+        <div className=" mt-5">
+          <span>What's your budget ?</span>
         </div>
-        <div className="p-2">
+        <div>
           <input
             id="budget"
             type="number"
@@ -113,7 +151,7 @@ export default function TopOptions() {
           />
         </div>
         {isLoading ? (
-          <div className="min-w-0 flex justify-center">
+          <div className="mt-5 min-w-0 flex justify-center">
             <button className="flex rounded-md border border-transparent px-5 py-3 bg-gray-800 text-base font-medium text-white shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10">
               <svg
                 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -141,9 +179,9 @@ export default function TopOptions() {
           <button
             onClick={onSubmitHandler}
             disabled={!symbol || !exerciceTimestamp}
-            className="rounded-md border border-transparent px-5 py-3 bg-gray-700 text-base font-medium text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10"
+            className="mt-5 rounded-md border border-transparent px-5 py-3 bg-gray-700 text-base font-medium text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-500 sm:px-10"
           >
-            Search Top Options
+            Search Best Options
           </button>
         )}
         <div className="mt-10">

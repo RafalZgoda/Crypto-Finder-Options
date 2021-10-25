@@ -1,7 +1,8 @@
 var bs = require("black-scholes");
 const axios = require("axios");
 const bluebird = require("bluebird");
-
+const moment = require("moment");
+const _ = require("lodash");
 const OPTION_TYPE = "call";
 const URL_DERIBIT = "https://www.deribit.com";
 // const URL_DERIBIT = "https://test.deribit.com";
@@ -18,16 +19,16 @@ const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 // TODO add call or put
 // TODO add IV change
 // TODO post message deribit discord reddit
-async function getIndexPrice(currency) {
-  let pair;
-  if (currency === "BTC") pair = "btc_usd";
-  if (currency === "ETH") pair = "eth_usd";
-  const { data } = await axios.get(
-    URL_DERIBIT + "/api/v2/public/get_index_price?index_name=" + pair
-  );
-  console.log({ indexPrice: data.result.index_price });
-  return data.result.index_price;
-}
+// async function getIndexPrice(currency) {
+//   let pair;
+//   if (currency === "BTC") pair = "btc_usd";
+//   if (currency === "ETH") pair = "eth_usd";
+//   const { data } = await axios.get(
+//     URL_DERIBIT + "/api/v2/public/get_index_price?index_name=" + pair
+//   );
+//   console.log({ indexPrice: data.result.index_price });
+//   return data.result.index_price;
+// }
 async function getVolatility(currency) {
   const { data } = await axios.get(
     URL_DERIBIT +
@@ -36,11 +37,14 @@ async function getVolatility(currency) {
       "&end_timestamp=" +
       Date.now() +
       "&resolution=60&start_timestamp=" +
-      Date.now() +
+      (Date.now() - 1000000) +
       ""
   );
-  console.log({ volatility60s: data.result.data });
-  return data.result.data[0][4] / 100;
+  const volatilityInfo = data.result.data;
+  const lastIndex = volatilityInfo.length - 1;
+  const closeVolatility = volatilityInfo[lastIndex][4] / 100;
+  console.log({ closeVolatility });
+  return closeVolatility;
 }
 
 async function getOptions(currency) {
@@ -53,15 +57,16 @@ async function getOptions(currency) {
   return data.result;
 }
 
-async function getRiskFreeRate() {
-  const { data } = await axios.get(
-    "https://data.nasdaq.com/api/v3/datasets/USTREASURY/YIELD.json?api_key=" +
-      API_KEY_NASDAQ
-  );
-  console.log({ riskFreeRate: data.dataset.data[0][10] });
-  const riskFreeRate = data.dataset.data[0][10] / 100 || 0.0166;
-  return riskFreeRate;
-}
+// async function getRiskFreeRate() {
+//   const { data } = await axios.get(
+//     "https://data.nasdaq.com/api/v3/datasets/USTREASURY/YIELD.json?api_key=" +
+//       API_KEY_NASDAQ
+//   );
+//   console.log({ riskFreeRate: data.dataset.data[0][10] });
+//   const riskFreeRate = data.dataset.data[0][10] / 100 || 0.0166;
+//   return riskFreeRate;
+// }
+
 async function getOrderBook(optionName) {
   const { data } = await axios.get(
     URL_DERIBIT +
@@ -194,46 +199,55 @@ const filterNearestOption = (options, nearest, exerciceTimestamp) => {
         : acc
     );
 
-  let filteredCalls = {};
+  let filteredCalls = [];
+  // exerciceTimestamp ca vaut 1 janvier 2022
   for (i = 0; i < nearest; i++) {
     const nearestExpirationTimestamp = closest(sortedCalls, exerciceTimestamp)[
       "expiration_timestamp"
     ];
-
-    filteredCalls = {
-      ...filteredCalls,
-      nearestExpirationTimestamp: sortedCalls.filter(
+    // 31 dec en timestamp
+    filteredCalls.push(
+      sortedCalls.filter(
+        // tous les calls du 31 dec
         (option) => option.expiration_timestamp === nearestExpirationTimestamp
-      ),
-    };
+      )
+    );
+
+    sortedCalls = sortedCalls.filter(
+      (option) => option.expiration_timestamp !== nearestExpirationTimestamp
+    );
+    // retirer tous les call du 31 dec de l'array sortedCalls
+    // recommencer l'opération pour trouver les calls du 6 janvier 2022
     // filteredCalls = { nearestCalls, ...filteredCalls };
   }
-  console.log({ filteredCalls: filteredCalls.nearestExpirationTimestamp });
+  return _.flatten(filteredCalls);
 };
 
 module.exports = async (req, res) => {
-  let { symbol, exerciceTimestamp, priceExpected } = req.body;
+  let { symbol, exerciceTimestamp, priceExpected, riskFreeRate, marketInfo } =
+    req.body;
   console.log({ priceExpected });
   try {
-    // const options = await getOptions(symbol);
-    // let calls = options.filter((option) => option.option_type === OPTION_TYPE);
-    // // const nearestCalls = filterNearestOption(calls, 4, exerciceTimestamp);
+    const options = await getOptions(symbol);
+    let calls = options.filter((option) => option.option_type === OPTION_TYPE);
+    const nearestCalls = filterNearestOption(calls, 7, exerciceTimestamp);
+    // console.log({ nearestCalls });
     // const indexPrice = await getIndexPrice(symbol);
     // const RISK_FREE_RATE = await getRiskFreeRate();
-    // const CURRENT_IV = await getVolatility(symbol);
-    // let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
-    //   calls,
-    //   CURRENT_IV,
-    //   RISK_FREE_RATE,
-    //   indexPrice
-    // );
-    // let bestOptions = await findBestOptionsForScenario(
-    //   detailledCalls,
-    //   exerciceTimestamp,
-    //   priceExpected
-    // );
+    const CURRENT_IV = await getVolatility(symbol);
+    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
+      nearestCalls,
+      CURRENT_IV,
+      riskFreeRate,
+      marketInfo.index
+    );
+    let bestOptions = await findBestOptionsForScenario(
+      detailledCalls,
+      exerciceTimestamp,
+      priceExpected
+    );
     // console.log({ bestOptions });
-    // return res.status(201).send([]);
+    return res.status(200).send(bestOptions);
     const bestOPtions = [
       {
         instrument_name: "BTC-25MAR22-70000-C",
@@ -254,7 +268,7 @@ module.exports = async (req, res) => {
         estimateExpectedPrice: 12637.07011983353,
       },
     ];
-    return res.status(201).send(bestOPtions);
+    return res.status(200).send(bestOPtions);
   } catch (error) {
     console.error({ error });
     return res.status(500).send(error);
