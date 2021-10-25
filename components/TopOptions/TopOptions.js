@@ -94,10 +94,10 @@ export default function TopOptions() {
 
         <div className="p-2">
           <input
-            id="pricePredicted"
+            id="priceExpected"
             type="number"
-            value={pricePredicted}
-            onChange={(event) => setPricePredicted(event.target.value)}
+            value={priceExpected}
+            onChange={(event) => setPriceExpected(event.target.value)}
             placeholder="Predicted price ($)"
             className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2  focus:ring-offset-indigo-900"
           />
