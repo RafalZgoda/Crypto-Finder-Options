@@ -7,7 +7,7 @@ import OptionProfitTable from "../OptionProfitsTable/OptionProfitTable";
 import DropdownButtonCrypto from "../DropdownButtonCrypto/DropdownButtonCrypto";
 import DayPicker from "react-day-picker";
 import "react-day-picker/lib/style.css";
-
+import DayPickerInput from "react-day-picker/DayPickerInput";
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -66,27 +66,8 @@ export default function TopOptions() {
             setSymbol(symbol);
           }}
         />
-        <div className="p-2 mt-5">
-          <span>Predict the price</span>
-        </div>
-
-        <div className="">
-          <input
-            id="priceExpected"
-            type="priceExpected"
-            name="priceExpected"
-            value={priceExpected}
-            onChange={(event) => setPriceExpected(event.target.value)}
-            placeholder="Expected price ($)"
-            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
-          />
-        </div>
-        <div className=" mt-8">
-          <span>For a date</span>
-        </div>
-
-        <div className=" ">
-          <DayPicker
+        <div className="p-2 ">
+          <DayPickerInput
             selectedDays={new Date(exerciceTimestamp)}
             onDayClick={handleDayClick}
             disabledDays={[
@@ -95,21 +76,40 @@ export default function TopOptions() {
               },
             ]}
             fromMonth={new Date()}
+            inputProps={{
+              style: {
+                borderRadius: "0.375rem",
+                padding: "0.5rem",
+                borderWidth: "2px",
+
+                paddingTop: "0.75rem",
+                paddingBottom: "0.75rem",
+                paddingLeft: "1rem",
+                paddingRight: "1rem",
+              },
+            }}
+            onDayChange={handleDayClick}
           />
         </div>
 
-        <div className=" mt-5">
-          <span>What's your budget ?</span>
+        <div className="p-2">
+          <input
+            id="priceExpected"
+            type="number"
+            value={priceExpected}
+            onChange={(event) => setPriceExpected(event.target.value)}
+            placeholder="Predicted price ($)"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2  focus:ring-offset-indigo-900"
+          />
         </div>
         <div className="p-2">
           <input
             id="budget"
-            type="budget"
-            name="budget"
+            type="number"
             value={budget}
             onChange={(event) => setBudget(event.target.value)}
             placeholder="Budget ($)"
-            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 focus:ring-offset-gray-900"
+            className="  px-4 py-3 rounded-md border-2 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2  focus:ring-offset-indigo-900"
           />
         </div>
         {isLoading ? (
