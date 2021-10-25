@@ -88,43 +88,51 @@ export default function OptionsProfitTable({
         Show table
       </button>
       {headers && prices && tableData && (
-        <div className="mt-10">
-          <table>
-            <thead className="bg-red-50">
-              <tr key={Math.random()}>
-                <th className="sm:p-2 bg-gray-200">{symbol} </th>
-                {headers?.map((time, index) => (
-                  <th className="sm:p-2 bg-gray-100" key={index}>
-                    {moment(parseInt(time)).format("DD/MM")}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            {prices && (
-              <tbody>
-                {prices?.map((price, index) => (
-                  <tr key={index}>
-                    <td className="sm:p-1 bg-gray-100">
-                      {numberWithSpaces(price)}
-                    </td>
-                    {Object?.values(tableData[price]).flatMap((key, i) => (
-                      <td
-                        className={
-                          key > 10 ? "bg-green-300	sm:p-1" : "bg-red-300	sm:p-1"
-                        }
-                        key={i}
-                      >
-                        {numberWithSpaces(
-                          Math.round(key * Math.round(budget / option.askPrice))
-                        )}
-                        $
-                      </td>
+        <div className="flex flex-col text-xs mt-10 ">
+          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <table>
+                <thead className="bg-red-50">
+                  <tr key={Math.random()}>
+                    <th className="sm:p-2  bg-gray-200">{symbol} </th>
+                    {headers?.map((time, index) => (
+                      <th className="sm:p-2 bg-gray-100" key={index}>
+                        {moment(parseInt(time)).format("DD/MM")}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
+                </thead>
+                {prices && (
+                  <tbody>
+                    {prices?.map((price, index) => (
+                      <tr key={index}>
+                        <td className="sm:p-2 bg-gray-100">
+                          {numberWithSpaces(price)}
+                        </td>
+                        {Object?.values(tableData[price]).flatMap((key, i) => (
+                          <td
+                            className={
+                              key > 10
+                                ? "bg-green-300	sm:p-2"
+                                : "bg-red-300	sm:p-2"
+                            }
+                            key={i}
+                          >
+                            {numberWithSpaces(
+                              Math.round(
+                                key * Math.round(budget / option.askPrice)
+                              )
+                            )}
+                            $
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                )}
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </>
