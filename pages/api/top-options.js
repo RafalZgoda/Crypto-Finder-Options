@@ -232,14 +232,14 @@ module.exports = async (req, res) => {
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
     const nearestCalls = filterNearestOption(calls, 7, exerciceTimestamp);
     // const CURRENT_IV = await getVolatility(symbol);
-    // let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
-    //   nearestCalls,
-    //   marketInfo.volatility,
-    //   //CURRENT_IV,
-    //   riskFreeRate,
-    //   marketInfo.index
-    // );
-    let bestOptions = {};
+    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
+      nearestCalls,
+      marketInfo.volatility,
+      //CURRENT_IV,
+      riskFreeRate,
+      marketInfo.index
+    );
+    let bestOptions = [];
     // await findBestOptionsForScenario(
     //   detailledCalls,
     //   exerciceTimestamp,
