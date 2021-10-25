@@ -17,7 +17,7 @@ const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 // TODO add in table show by $ profit or % roi
 // TODO add call or put
 // TODO add IV change
-
+// TODO post message deribit discord reddit
 async function getIndexPrice(currency) {
   let pair;
   if (currency === "BTC") pair = "btc_usd";
@@ -233,7 +233,7 @@ module.exports = async (req, res) => {
     //   priceExpected
     // );
     // console.log({ bestOptions });
-    return res.status(201).send("bestOptions");
+    return res.status(201).send([]);
   } catch (error) {
     console.error({ error });
     return res.status(500).send(error);
