@@ -213,7 +213,7 @@ const filterNearestOption = (options, nearest, exerciceTimestamp) => {
 
 module.exports = async (req, res) => {
   let { symbol, exerciceTimestamp, priceExpected } = req.body;
-
+  console.log({ priceExpected });
   try {
     // const options = await getOptions(symbol);
     // let calls = options.filter((option) => option.option_type === OPTION_TYPE);
@@ -233,7 +233,28 @@ module.exports = async (req, res) => {
     //   priceExpected
     // );
     // console.log({ bestOptions });
-    return res.status(201).send([]);
+    // return res.status(201).send([]);
+    const bestOPtions = [
+      {
+        instrument_name: "BTC-25MAR22-70000-C",
+        strike: 70000,
+        underlyingPrice: 63818.32,
+        exerciceTimestamp: 1635081492209,
+        expirationTimestamp: 1648195200000,
+        type: "call",
+        riskFreeRate: 0.0166,
+        mark_iv: 68.33,
+        implied_volatility: 0.8623,
+        askPriceCrypto: 0.1375,
+        askPrice: 8775.019,
+        estimatePrice: 11918.83813710379,
+        overPrice: 0.7362310737892342,
+        ROI: 0.44011883277216035,
+        profit: 3862.05111983353,
+        estimateExpectedPrice: 12637.07011983353,
+      },
+    ];
+    return res.status(201).send(bestOPtions);
   } catch (error) {
     console.error({ error });
     return res.status(500).send(error);
