@@ -231,21 +231,20 @@ module.exports = async (req, res) => {
     const options = await getOptions(symbol);
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
     const nearestCalls = filterNearestOption(calls, 7, exerciceTimestamp);
-    // console.log({ nearestCalls });
-    // const indexPrice = await getIndexPrice(symbol);
-    // const RISK_FREE_RATE = await getRiskFreeRate();
-    const CURRENT_IV = await getVolatility(symbol);
-    let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
-      nearestCalls,
-      CURRENT_IV,
-      riskFreeRate,
-      marketInfo.index
-    );
-    let bestOptions = await findBestOptionsForScenario(
-      detailledCalls,
-      exerciceTimestamp,
-      priceExpected
-    );
+    // const CURRENT_IV = await getVolatility(symbol);
+    // let detailledCalls = await getOrderBookAndEstimatePriceForOptions(
+    //   nearestCalls,
+    //   marketInfo.volatility,
+    //   //CURRENT_IV,
+    //   riskFreeRate,
+    //   marketInfo.index
+    // );
+    let bestOptions = {};
+    // await findBestOptionsForScenario(
+    //   detailledCalls,
+    //   exerciceTimestamp,
+    //   priceExpected
+    // );
     // console.log({ bestOptions });
     return res.status(200).send(bestOptions);
     const bestOPtions = [
