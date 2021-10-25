@@ -15,7 +15,11 @@ export default function Home() {
         </h1>
         <span className="text-2xl pt-5 text-lg text-gray-500">
           Find the best option on Deribit for your expected price at a specified
-          date.
+          date.{" "}
+        </span>{" "}
+        <span className="text-2xl pt-1 text-lg text-gray-500">
+          Using Black-Scholes models, we will find for you the option that
+          maximise your ROI for your expected price at at date.
         </span>{" "}
         <TopOptions />
       </main>
