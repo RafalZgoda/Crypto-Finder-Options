@@ -19,6 +19,7 @@ const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 // TODO add call or put
 // TODO add IV change
 // TODO post message deribit discord reddit
+// TODO library for api
 // async function getIndexPrice(currency) {
 //   let pair;
 //   if (currency === "BTC") pair = "btc_usd";
@@ -100,7 +101,7 @@ function estimateOptionPrice({
 
 function computeTimeToExpire(exerciceTimestamp, expirationDate) {
   const timeRemaining = expirationDate - exerciceTimestamp;
-  if (timeRemaining < 0) return;
+  if (timeRemaining < 0) return 0;
   const timeToExpire = timeRemaining / 31536000000;
   return timeToExpire;
 }
@@ -157,19 +158,19 @@ function findBestOptionsForScenario(
 ) {
   const optionsReturn = options
     .map((option) => {
-      if (option?.expirationTimestamp > expectedExerciceTimestamp) {
-        const estimateExpectedPrice = estimateOptionPrice({
-          ...option,
-          exerciceTimestamp: expectedExerciceTimestamp,
-          underlyingPrice: expectedUnderlyingPrice,
-        });
-        return {
-          ...option,
-          ROI: (estimateExpectedPrice - option.askPrice) / option.askPrice,
-          profit: estimateExpectedPrice - option.askPrice,
-          estimateExpectedPrice,
-        };
-      }
+      // if (option?.expirationTimestamp > expectedExerciceTimestamp) {
+      const estimateExpectedPrice = estimateOptionPrice({
+        ...option,
+        exerciceTimestamp: expectedExerciceTimestamp,
+        underlyingPrice: expectedUnderlyingPrice,
+      });
+      return {
+        ...option,
+        ROI: (estimateExpectedPrice - option.askPrice) / option.askPrice,
+        profit: estimateExpectedPrice - option.askPrice,
+        estimateExpectedPrice,
+      };
+      // }
     })
     .filter((clean) => !!clean);
 
@@ -184,12 +185,11 @@ function findBestOptionsForScenario(
 }
 
 const filterNearestOption = (options, nearest, exerciceTimestamp) => {
-  let sortedCalls = options.sort(function (option1, option2) {
-    return option2.expiration_timestamp - option1.expiration_timestamp;
-  });
-  sortedCalls = options.filter(function (option) {
-    return option.expiration_timestamp > exerciceTimestamp;
-  });
+  let sortedCalls = options
+    .sort(function (option1, option2) {
+      return option2.expiration_timestamp - option1.expiration_timestamp;
+    })
+    .filter((option) => option.expiration_timestamp > exerciceTimestamp);
 
   const closest = (data, target) =>
     data.reduce((acc, obj) =>
@@ -202,23 +202,25 @@ const filterNearestOption = (options, nearest, exerciceTimestamp) => {
   let filteredCalls = [];
   // exerciceTimestamp ca vaut 1 janvier 2022
   for (i = 0; i < nearest; i++) {
-    const nearestExpirationTimestamp = closest(sortedCalls, exerciceTimestamp)[
-      "expiration_timestamp"
-    ];
-    // 31 dec en timestamp
-    filteredCalls.push(
-      sortedCalls.filter(
-        // tous les calls du 31 dec
-        (option) => option.expiration_timestamp === nearestExpirationTimestamp
-      )
-    );
+    if (sortedCalls.length != 0) {
+      const nearestExpirationTimestamp = closest(
+        sortedCalls,
+        exerciceTimestamp
+      )["expiration_timestamp"];
+      // 31 dec en timestamp
+      filteredCalls.push(
+        sortedCalls.filter(
+          // tous les calls du 31 dec
+          (option) => option.expiration_timestamp === nearestExpirationTimestamp
+        )
+      );
 
-    sortedCalls = sortedCalls.filter(
-      (option) => option.expiration_timestamp !== nearestExpirationTimestamp
-    );
-    // retirer tous les call du 31 dec de l'array sortedCalls
-    // recommencer l'opération pour trouver les calls du 6 janvier 2022
-    // filteredCalls = { nearestCalls, ...filteredCalls };
+      sortedCalls = sortedCalls.filter(
+        (option) => option.expiration_timestamp !== nearestExpirationTimestamp
+      ); // retirer tous les call du 31 dec de l'array sortedCalls
+
+      // recommencer l'opération pour trouver les calls du 6 janvier 2022
+    }
   }
   return _.flatten(filteredCalls);
 };
@@ -234,7 +236,8 @@ module.exports = async (req, res) => {
     console.log({ getOptions: Date.now() - beginTime });
 
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
-    const nearestOptions = filterNearestOption(calls, 2, exerciceTimestamp); // 7 nearest expiration_timestamp options
+    const nearestOptions = filterNearestOption(calls, 3, exerciceTimestamp); // 7 nearest expiration_timestamp options
+    console.log({ nearestOptions });
     console.log({ nearestOptions: Date.now() - beginTime });
     // console.log({ nearestOptions });
     // const CURRENT_IV = await getVolatility(symbol);

@@ -56,6 +56,8 @@ export default function TopOptions() {
       setOptions(optionsFound);
       setSelected(optionsFound[0]);
       setIsLoading(false);
+      if (optionsFound[0].askPrice > budget)
+        setBudget(optionsFound[0].askPrice);
     }
     if (error) {
       setIsLoading(false);
@@ -118,9 +120,10 @@ export default function TopOptions() {
             onDayClick={handleDayClick}
             disabledDays={[
               {
-                before: new Date(),
+                after: new Date(2018, 3, 20),
               },
             ]}
+            inputProps={{ readOnly: true }}
             fromMonth={new Date()}
             inputProps={{
               style: {

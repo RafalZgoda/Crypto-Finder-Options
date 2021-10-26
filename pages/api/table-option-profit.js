@@ -29,7 +29,7 @@ function estimateOptionPrice({
 
 function computeTimeToExpire(exerciceTimestamp, expirationDate) {
   const timeRemaining = expirationDate - exerciceTimestamp;
-  if (timeRemaining < 0) return;
+  if (timeRemaining < 0) return 0;
   const timeToExpire = timeRemaining / 31536000000;
   return timeToExpire;
 }
@@ -45,11 +45,8 @@ function drawData(option, beginPrice, endPrice) {
   let initDate = Date.now();
   for (let price = beginPrice; price < endPrice; price += incrementPrice) {
     data[price] = {};
-    for (
-      let date = initDate;
-      date < option.expirationTimestamp;
-      date += incrementDate
-    ) {
+    let date = initDate;
+    for (date; date < option.expirationTimestamp; date += incrementDate) {
       data[price][date] =
         estimateOptionPrice({
           ...option,
@@ -57,6 +54,12 @@ function drawData(option, beginPrice, endPrice) {
           underlyingPrice: Math.round(price, 0),
         }) - option.askPrice;
     }
+    data[price][date] =
+      estimateOptionPrice({
+        ...option,
+        exerciceTimestamp: date + 1,
+        underlyingPrice: Math.round(price, 0),
+      }) - option.askPrice;
   }
   return data;
 }
