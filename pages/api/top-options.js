@@ -236,7 +236,7 @@ module.exports = async (req, res) => {
     console.log({ getOptions: Date.now() - beginTime });
 
     let calls = options.filter((option) => option.option_type === OPTION_TYPE);
-    const nearestOptions = filterNearestOption(calls, 3, exerciceTimestamp); // 7 nearest expiration_timestamp options
+    const nearestOptions = filterNearestOption(calls, 2, exerciceTimestamp); // 7 nearest expiration_timestamp options
     console.log({ nearestOptions });
     console.log({ nearestOptions: Date.now() - beginTime });
     // console.log({ nearestOptions });
