@@ -21,7 +21,7 @@ export default function TopOptions() {
   const [symbol, setSymbol] = useState("BTC");
   const [exerciceTimestamp, setExerciceTimestamp] = useState("");
   const [priceExpected, setPriceExpected] = useState("");
-  const [budget, setBudget] = useState("");
+  const [budget, setBudget] = useState(5000);
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState();
   const [isLoading, setIsLoading] = useState(false);
