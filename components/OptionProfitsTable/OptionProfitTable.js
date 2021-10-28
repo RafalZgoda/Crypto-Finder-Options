@@ -8,6 +8,7 @@ export default function OptionsProfitTable({
   symbol,
   priceExpected,
   budget,
+  priceInCrypto = false,
 }) {
   const [beginPrice, setBeginPrice] = useState(
     Math.round(option.indexPrice / 10) * 10
@@ -112,18 +113,27 @@ export default function OptionsProfitTable({
                         {Object?.values(tableData[price]).flatMap((key, i) => (
                           <td
                             className={
-                              key > 10
+                              (
+                                priceInCrypto
+                                  ? key / price - option.askPriceCrypto > 0
+                                  : key - option.askPrice > 0
+                              )
                                 ? "bg-green-300	sm:p-2"
                                 : "bg-red-300	sm:p-2"
                             }
                             key={i}
                           >
-                            {numberWithSpaces(
-                              Math.round(
-                                key * Math.round(budget / option.askPrice)
-                              )
-                            )}
-                            $
+                            {priceInCrypto
+                              ? (
+                                  (key / price) *
+                                  Math.round(budget / option.askPrice)
+                                ).toFixed(5)
+                              : numberWithSpaces(
+                                  Math.round(
+                                    (key - option.askPrice) *
+                                      Math.round(budget / option.askPrice)
+                                  )
+                                ) + "$"}
                           </td>
                         ))}
                       </tr>

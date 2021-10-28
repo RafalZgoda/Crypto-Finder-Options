@@ -1,38 +1,8 @@
-var bs = require("black-scholes");
+var lib = require("./library/lib");
+const { estimateOptionPrice } = lib;
 
 const MAX_HEADERS = 15;
 const MAX_ROWS = 30;
-
-function estimateOptionPrice({
-  underlyingPrice,
-  strike,
-  exerciceTimestamp,
-  expirationTimestamp,
-  implied_volatility,
-  riskFreeRate,
-  type,
-}) {
-  const timeToExpire = computeTimeToExpire(
-    exerciceTimestamp,
-    expirationTimestamp
-  );
-  const estimatePrice = bs.blackScholes(
-    underlyingPrice,
-    strike,
-    timeToExpire,
-    implied_volatility,
-    riskFreeRate,
-    type
-  );
-  return estimatePrice;
-}
-
-function computeTimeToExpire(exerciceTimestamp, expirationDate) {
-  const timeRemaining = expirationDate - exerciceTimestamp;
-  if (timeRemaining < 0) return 0;
-  const timeToExpire = timeRemaining / 31536000000;
-  return timeToExpire;
-}
 
 function drawData(option, beginPrice, endPrice) {
   let data = {};
@@ -47,19 +17,17 @@ function drawData(option, beginPrice, endPrice) {
     data[price] = {};
     let date = initDate;
     for (date; date < option.expirationTimestamp; date += incrementDate) {
-      data[price][date] =
-        estimateOptionPrice({
-          ...option,
-          exerciceTimestamp: date,
-          underlyingPrice: Math.round(price, 0),
-        }) - option.askPrice;
-    }
-    data[price][date] =
-      estimateOptionPrice({
+      data[price][date] = estimateOptionPrice({
         ...option,
-        exerciceTimestamp: date + 1,
+        exerciceTimestamp: date,
         underlyingPrice: Math.round(price, 0),
-      }) - option.askPrice;
+      });
+    }
+    data[price][date] = estimateOptionPrice({
+      ...option,
+      exerciceTimestamp: date + 1,
+      underlyingPrice: Math.round(price, 0),
+    });
   }
   return data;
 }

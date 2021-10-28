@@ -223,7 +223,10 @@ export default function TopOptions() {
                               {option.askPriceCrypto} {symbol}
                               {/* {Math.round(option.askPriceCrypto)} */}
                             </p>
-                            <p className="sm:inline"></p>
+
+                            <p className="">
+                              @{numberWithSpaces(option.askPrice.toFixed(2))} $
+                            </p>
                           </RadioGroup.Description>
                         </div>
                       </div>
@@ -248,6 +251,12 @@ export default function TopOptions() {
                           )}{" "}
                           $
                         </div>
+                        <div className="ml-1 text-gray-500  text-left sm:ml-0">
+                          {option.overPrice < 1
+                            ? "Underpriced : "
+                            : "Overpriced : "}
+                          {Math.round(option.overPrice * 1000, 1) / 100} %
+                        </div>
                       </RadioGroup.Description>
                       <div
                         className={classNames(
@@ -264,12 +273,24 @@ export default function TopOptions() {
           </RadioGroup>
         </div>
       </div>
+
+      {selected && (
+        <div>
+          <OptionProfitTable
+            option={selected}
+            symbol={symbol}
+            priceExpected={priceExpected}
+            budget={budget}
+          />
+        </div>
+      )}
       {selected && (
         <OptionProfitTable
           option={selected}
           symbol={symbol}
           priceExpected={priceExpected}
           budget={budget}
+          priceInCrypto={true}
         />
       )}
     </>

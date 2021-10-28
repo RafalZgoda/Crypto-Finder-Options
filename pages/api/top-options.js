@@ -6,7 +6,7 @@ const _ = require("lodash");
 const OPTION_TYPE = "call";
 const URL_DERIBIT = "https://www.deribit.com";
 // const URL_DERIBIT = "https://test.deribit.com";
-const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
+const { estimateOptionPrice } = require("./library/lib");
 
 // TODO add the APIKEY deribit for rate limiter
 // TODO manual settings
@@ -20,15 +20,7 @@ const API_KEY_NASDAQ = "5zorJTCa6zk43iJr-TGC";
 // TODO add IV change
 // TODO post message deribit discord reddit
 // TODO library for api
-// async function getIndexPrice(currency) {
-//   let pair;
-//   if (currency === "BTC") pair = "btc_usd";
-//   if (currency === "ETH") pair = "eth_usd";
-//   const { data } = await axios.get(
-//     URL_DERIBIT + "/api/v2/public/get_index_price?index_name=" + pair
-//   );
-//   return data.result.index_price;
-// }
+
 async function getVolatility(currency) {
   const { data } = await axios.get(
     URL_DERIBIT +
@@ -57,15 +49,6 @@ async function getOptions(currency) {
   return data.result;
 }
 
-// async function getRiskFreeRate() {
-//   const { data } = await axios.get(
-//     "https://data.nasdaq.com/api/v3/datasets/USTREASURY/YIELD.json?api_key=" +
-//       API_KEY_NASDAQ
-//   );
-//   const riskFreeRate = data.dataset.data[0][10] / 100 || 0.0166;
-//   return riskFreeRate;
-// }
-
 async function getOrderBook(optionName) {
   const { data } = await axios.get(
     URL_DERIBIT +
@@ -73,37 +56,6 @@ async function getOrderBook(optionName) {
       optionName
   );
   return data.result;
-}
-
-function estimateOptionPrice({
-  underlyingPrice,
-  strike,
-  exerciceTimestamp,
-  expirationTimestamp,
-  implied_volatility,
-  riskFreeRate,
-  type,
-}) {
-  const timeToExpire = computeTimeToExpire(
-    exerciceTimestamp,
-    expirationTimestamp
-  );
-  const estimatePrice = bs.blackScholes(
-    underlyingPrice,
-    strike,
-    timeToExpire,
-    implied_volatility,
-    riskFreeRate,
-    type
-  );
-  return estimatePrice;
-}
-
-function computeTimeToExpire(exerciceTimestamp, expirationDate) {
-  const timeRemaining = expirationDate - exerciceTimestamp;
-  if (timeRemaining < 0) return 0;
-  const timeToExpire = timeRemaining / 31536000000;
-  return timeToExpire;
 }
 
 async function getOrderBookAndEstimatePriceForOptions(
